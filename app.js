@@ -1599,7 +1599,7 @@ $("#home-pick").textContent = SHARE ? "📍 เลือกจุดตั้ง
 $("#map-note").innerHTML = "🚗 เส้นทาง/เวลาคำนวณจาก OSRM (OpenStreetMap) — เส้นทางสั้นที่สุดตามถนน ไม่รวมรถติด · ย้ายจุดตั้งต้นแล้วเว็บดึงเส้นทางใหม่สด (ต้องออนไลน์) · วงรัศมี 3/5/10 กม. เป็นระยะตรง"
   + (SHARE ? "" : " และระยะ TDP/OB เป็นระยะตรง");
 $("#data-date").textContent = "ข้อมูล ณ " + D.generated;
-if (SHARE) document.title = "เลือก ป.1 ให้ลูก — ฉบับแชร์ (จุดอ้างอิง: อนุบาลบ้านสนุกคิด)";
+if (SHARE) document.title = "ข้อมูลประกอบการเลือกโรงเรียน ป.1 — ฉบับแชร์ (จุดอ้างอิง: อนุบาลบ้านสนุกคิด)";
 const nMd = (D.wiki_files || []).length;
 if (nMd) $("#wiki-dl").textContent = `⬇️ ดาวน์โหลด wiki .md ทั้งหมด (${nMd} ไฟล์)`;
 setView("cards");
