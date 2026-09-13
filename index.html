@@ -84,6 +84,22 @@
           <label><input type="checkbox" id="map-rings" checked> วงรัศมี 3/5/10 กม.</label>
           <a class="btn btn-sm btn-kmz" href="assets/kati-school-map.kmz" download title="ดาวน์โหลดไฟล์ KMZ — เปิดใน Google Earth หรือนำเข้า Google My Maps เพื่อทำต่อเอง (หมุดโรงเรียนทุกโรง + จุดตั้งต้น + วงรัศมี + เส้นทางขับรถ)">⬇️ ไฟล์ KMZ</a>
         </div>
+        <details class="kmz-help">
+          <summary>❓ เอาไฟล์ KMZ ไปทำอะไรต่อได้ — วิธีใช้กับ Google Maps</summary>
+          <div class="kmz-help-body">
+            <p>ไฟล์ KMZ คือแผนที่ชุดนี้ทั้งหมด (หมุดทุกโรง + จุดตั้งต้น + วงรัศมี + เส้นทางขับรถ) ในรูปแบบที่ Google เปิดได้ — เอาไปทำต่อบนแผนที่ของตัวเอง เช่น เพิ่มหมุดบ้านญาติ วาดเส้นทางรถรับส่ง หรือแชร์ให้คนที่บ้านดูร่วมกัน</p>
+            <b>นำเข้า Google My Maps (แนะนำ)</b>
+            <ol>
+              <li>กด <b>⬇️ ไฟล์ KMZ</b> ด้านบน</li>
+              <li>เปิด <a href="https://www.google.com/mymaps" target="_blank" rel="noopener">Google My Maps</a> (mymaps.google.com — บัญชี Google ฟรี)</li>
+              <li><b>สร้างแผนที่ใหม่</b> → กล่อง "ชั้นข้อมูล" ซ้ายมือ → กด <b>นำเข้า</b> → เลือกไฟล์ <code>kati-school-map.kmz</code></li>
+            </ol>
+            <p>ของจะแยกเป็นชั้นข้อมูล ติ๊กเปิด-ปิดได้ทีละชั้น · คลิกหมุดโรงเห็นราคา/โปรแกรม/ระยะ · กด "แชร์" ส่งลิงก์ให้คนอื่นดูต่อได้</p>
+            <b>หรือเปิดใน Google Earth</b>
+            <p>เว็บ <a href="https://earth.google.com" target="_blank" rel="noopener">earth.google.com</a>: เมนู ☰ → เปิดไฟล์ → เลือกไฟล์ KMZ · มือถือ: แตะไฟล์แล้วเปิดด้วยแอป Earth</p>
+            <p class="kmz-help-note">หมายเหตุ: Google Maps ปกติ (maps.google.com) เปิด KMZ ตรง ๆ ไม่ได้ ต้องผ่าน My Maps หรือ Earth · อยากดูแค่โรงเดียว ใช้ลิงก์ 🗺️ ใน popup หมุดโรงเรียนแทนได้</p>
+          </div>
+        </details>
         <div class="side-list" id="map-list"></div>
       </div>
       <div class="map-box"><div id="map"></div><div id="map-fallback" hidden>🗺️ โหลดแผนที่ไม่ได้ — ต้องเชื่อมต่ออินเทอร์เน็ต (ส่วนอื่นของหน้าใช้ได้ปกติ)</div></div>
