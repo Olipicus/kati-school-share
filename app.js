@@ -1438,6 +1438,16 @@ function closeBrochures() {
   $("#brochure-scrim").hidden = true;
 }
 
+/* ---------- modal วิธีใช้ไฟล์ KMZ (แท็บแผนที่) ---------- */
+function openKmzHelp() {
+  $("#kmz-modal").hidden = false;
+  $("#kmz-scrim").hidden = false;
+}
+function closeKmzHelp() {
+  $("#kmz-modal").hidden = true;
+  $("#kmz-scrim").hidden = true;
+}
+
 /* ---------- drawer ---------- */
 function openDetail(slug) {
   const s = bySlug(slug); if (!s) return;
@@ -1557,11 +1567,16 @@ if ((D.brochures || []).length) { // บอกจำนวนไฟล์บน�
 }
 $("#home-pick").onclick = () => setPickMode(!pickMode);
 $("#home-reset").onclick = () => { try { localStorage.removeItem(SK + "origin"); } catch (e) {} setOrigin(D.home.lat, D.home.lon); };
+$("#kmz-help-open").onclick = openKmzHelp;
+$("#kmz-x").onclick = closeKmzHelp;
+$("#kmz-close").onclick = closeKmzHelp;
+$("#kmz-scrim").onclick = closeKmzHelp;
 document.addEventListener("keydown", e => {
   if (e.key !== "Escape") return;
   if (!$("#raw-modal").hidden) { closeRaw(); return; }
   if (!$("#fee-modal").hidden) { closeFeeModal(); return; }
   if (!$("#brochure-modal").hidden) { closeBrochures(); return; }
+  if (!$("#kmz-modal").hidden) { closeKmzHelp(); return; }
   if (pickMode) setPickMode(false);
 });
 

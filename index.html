@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>เลือก ป.1 ให้ลูก — รามคำแหง/รัตพัทนา</title>
+<link rel="icon" type="image/png" sizes="64x64" href="assets/logo/favicon-64.png">
+<link rel="apple-touch-icon" href="assets/logo/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -15,7 +17,7 @@
 <header class="topbar">
   <div class="topbar-inner">
     <div class="brand">
-      <div class="brand-logo">🎒</div>
+      <img class="brand-logo" src="assets/logo/logo-256.png" alt="โลโก้เว็บเลือกโรงเรียน" width="58" height="58">
       <div>
         <h1>เลือกโรงเรียน ป.1 ให้ลูก</h1>
         <p class="brand-sub">ย่านรามคำแหง–รัตพัทนา · เป้าหมาย <b>ป.1 ปีการศึกษา 2570</b> (เปิดเทอม พ.ค. 2027)</p>
@@ -83,23 +85,8 @@
           </select></label>
           <label><input type="checkbox" id="map-rings" checked> วงรัศมี 3/5/10 กม.</label>
           <a class="btn btn-sm btn-kmz" href="assets/kati-school-map.kmz" download title="ดาวน์โหลดไฟล์ KMZ — เปิดใน Google Earth หรือนำเข้า Google My Maps เพื่อทำต่อเอง (หมุดโรงเรียนทุกโรง + จุดตั้งต้น + วงรัศมี + เส้นทางขับรถ)">⬇️ ไฟล์ KMZ</a>
+          <button class="btn btn-sm" id="kmz-help-open" title="วิธีเอาไฟล์ KMZ ไปใช้ต่อบน Google Maps / Google Earth">❓ วิธีใช้</button>
         </div>
-        <details class="kmz-help">
-          <summary>❓ เอาไฟล์ KMZ ไปทำอะไรต่อได้ — วิธีใช้กับ Google Maps</summary>
-          <div class="kmz-help-body">
-            <p>ไฟล์ KMZ คือแผนที่ชุดนี้ทั้งหมด (หมุดทุกโรง + จุดตั้งต้น + วงรัศมี + เส้นทางขับรถ) ในรูปแบบที่ Google เปิดได้ — เอาไปทำต่อบนแผนที่ของตัวเอง เช่น เพิ่มหมุดบ้านญาติ วาดเส้นทางรถรับส่ง หรือแชร์ให้คนที่บ้านดูร่วมกัน</p>
-            <b>นำเข้า Google My Maps (แนะนำ)</b>
-            <ol>
-              <li>กด <b>⬇️ ไฟล์ KMZ</b> ด้านบน</li>
-              <li>เปิด <a href="https://www.google.com/mymaps" target="_blank" rel="noopener">Google My Maps</a> (mymaps.google.com — บัญชี Google ฟรี)</li>
-              <li><b>สร้างแผนที่ใหม่</b> → กล่อง "ชั้นข้อมูล" ซ้ายมือ → กด <b>นำเข้า</b> → เลือกไฟล์ <code>kati-school-map.kmz</code></li>
-            </ol>
-            <p>ของจะแยกเป็นชั้นข้อมูล ติ๊กเปิด-ปิดได้ทีละชั้น · คลิกหมุดโรงเห็นราคา/โปรแกรม/ระยะ · กด "แชร์" ส่งลิงก์ให้คนอื่นดูต่อได้</p>
-            <b>หรือเปิดใน Google Earth</b>
-            <p>เว็บ <a href="https://earth.google.com" target="_blank" rel="noopener">earth.google.com</a>: เมนู ☰ → เปิดไฟล์ → เลือกไฟล์ KMZ · มือถือ: แตะไฟล์แล้วเปิดด้วยแอป Earth</p>
-            <p class="kmz-help-note">หมายเหตุ: Google Maps ปกติ (maps.google.com) เปิด KMZ ตรง ๆ ไม่ได้ ต้องผ่าน My Maps หรือ Earth · อยากดูแค่โรงเดียว ใช้ลิงก์ 🗺️ ใน popup หมุดโรงเรียนแทนได้</p>
-          </div>
-        </details>
         <div class="side-list" id="map-list"></div>
       </div>
       <div class="map-box"><div id="map"></div><div id="map-fallback" hidden>🗺️ โหลดแผนที่ไม่ได้ — ต้องเชื่อมต่ออินเทอร์เน็ต (ส่วนอื่นของหน้าใช้ได้ปกติ)</div></div>
@@ -205,6 +192,32 @@
 <!-- modal ดาวน์โหลดโบรชัวร์/ประกาศ raw/downloads/ (สำเนาอยู่ที่ web/assets/brochures/) -->
 <div class="drawer-scrim fee-scrim" id="brochure-scrim" hidden></div>
 <div class="fee-modal" id="brochure-modal" hidden></div>
+
+<!-- modal วิธีใช้ไฟล์ KMZ กับ Google Maps (กดปุ่ม ❓ วิธีใช้ ในแท็บแผนที่) -->
+<div class="drawer-scrim fee-scrim" id="kmz-scrim" hidden></div>
+<div class="fee-modal kmz-modal" id="kmz-modal" hidden>
+  <div class="fee-head">
+    <h2>🗺️ เอาไฟล์ KMZ ไปทำต่อบน Google Maps — วิธีใช้</h2>
+    <div class="sub">ไฟล์ KMZ = แผนที่ชุดนี้ทั้งหมด (หมุดทุกโรง + จุดตั้งต้น + วงรัศมี 3/5/10 กม. + เส้นทางขับรถ) ในรูปแบบมาตรฐานที่ Google เปิดได้</div>
+    <button class="drawer-close" id="kmz-x" title="ปิด">✕</button>
+  </div>
+  <div class="fee-body kmz-md">
+    <b>นำเข้า Google My Maps (แนะนำ)</b>
+    <ol>
+      <li>กดปุ่ม <b>⬇️ ดาวน์โหลดไฟล์ KMZ</b> ด้านล่างนี้ (หรือปุ่มในแถบคอนโทรลของแท็บแผนที่)</li>
+      <li>เปิด <a href="https://www.google.com/mymaps" target="_blank" rel="noopener">Google My Maps</a> (mymaps.google.com — ใช้บัญชี Google ฟรี)</li>
+      <li>กด <b>สร้างแผนที่ใหม่</b> → กล่อง "ชั้นข้อมูล" ซ้ายมือ → กด <b>นำเข้า</b> → เลือกไฟล์ <code>kati-school-map.kmz</code> ที่เพิ่งโหลด</li>
+    </ol>
+    <p>หลังนำเข้า ของจะแยกเป็นชั้นข้อมูล (โรงเรียน/วงรัศมี/เส้นทาง) ติ๊กเปิด-ปิดได้ทีละชั้น · คลิกหมุดโรงเรียนเห็นราคา/โปรแกรม/ระยะ · จากนั้นเพิ่มหมุดของตัวเอง (บ้านญาติ ที่ทำงาน) วาดเส้นทางรถรับส่ง หรือกด "แชร์" ส่งลิงก์ให้คนอื่นดูต่อได้</p>
+    <b>หรือเปิดใน Google Earth</b>
+    <p>เว็บ <a href="https://earth.google.com" target="_blank" rel="noopener">earth.google.com</a>: เมนู ☰ → เปิดไฟล์ → เลือกไฟล์ KMZ · มือถือ: แตะไฟล์ KMZ แล้วเลือกเปิดด้วยแอป Earth</p>
+    <p class="kmz-note">หมายเหตุ: Google Maps ปกติ (maps.google.com) เปิด KMZ ตรง ๆ ไม่ได้ — ต้องผ่าน My Maps หรือ Earth เท่านั้น · อยากดูแค่โรงเดียวไม่ต้องใช้ไฟล์ กดลิงก์ 🗺️ เปิดใน Google Maps ใน popup หมุดโรงเรียนบนแผนที่ได้เลย</p>
+  </div>
+  <div class="fee-btns">
+    <a class="btn btn-primary" href="assets/kati-school-map.kmz" download>⬇️ ดาวน์โหลดไฟล์ KMZ</a>
+    <button class="btn" id="kmz-close">ปิด</button>
+  </div>
+</div>
 
 <footer class="footer">
   <p>ข้อมูลสร้างจาก <b>wiki/</b> ของโปรเจกต์ (source of truth) · <button class="btn btn-sm" id="wiki-dl-foot">⬇️ ดาวน์โหลด wiki ทั้งหมด (.zip)</button> <button class="btn btn-sm" id="brochure-dl-foot">🖼️ ดาวน์โหลดโบรชัวร์/ประกาศ</button></p>

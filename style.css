@@ -28,7 +28,7 @@ body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--
 .topbar { background: linear-gradient(135deg, #312e81 0%, #4f46e5 60%, #6d28d9 100%); color: #fff; padding: 18px 20px 0; }
 .topbar-inner { max-width: 1240px; margin: 0 auto; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
 .brand { display: flex; gap: 14px; align-items: center; }
-.brand-logo { font-size: 34px; background: rgba(255,255,255,.15); border-radius: 14px; width: 58px; height: 58px; display: flex; align-items: center; justify-content: center; }
+.brand-logo { background: rgba(255,255,255,.15); border-radius: 14px; width: 58px; height: 58px; padding: 3px; object-fit: contain; flex: none; }
 .brand h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: .2px; }
 .brand-sub { margin: 2px 0 0; font-size: 13px; opacity: .92; }
 .topbar-right { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
@@ -79,29 +79,18 @@ main { max-width: 1240px; margin: 22px auto 90px; padding: 0 20px; }
 .action-progress i { display: block; height: 100%; background: var(--green); transition: width .3s; }
 
 /* ---------- map ---------- */
-.map-layout { display: grid; grid-template-columns: 330px 1fr; gap: 16px; align-items: stretch; }
-@media (max-width: 900px) { .map-layout { grid-template-columns: 1fr; } }
+.map-layout { --map-h: clamp(720px, calc(100vh - 160px), 1080px); display: grid; grid-template-columns: 330px 1fr; gap: 16px; align-items: stretch; }
+@media (max-width: 900px) { .map-layout { grid-template-columns: 1fr; --map-h: min(75vh, 640px); } }
 .map-note { margin: 2px 2px 0; line-height: 1.6; }
-.map-box { position: relative; z-index: 0; min-height: 560px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow); background: var(--card); } /* z-index:0 = สร้าง stacking context กัก pane ของ Leaflet (400-800) ไว้ในกล่อง — ไม่งั้นแผนที่ลอยทับ drawer/modal ที่ z-index ต่ำกว่า */
+.map-box { position: relative; z-index: 0; min-height: var(--map-h); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow); background: var(--card); } /* z-index:0 = สร้าง stacking context กัก pane ของ Leaflet (400-800) ไว้ในกล่อง — ไม่งั้นแผนที่ลอยทับ drawer/modal ที่ z-index ต่ำกว่า */
 #map { position: absolute; inset: 0; }
 #map-fallback { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 30px; color: var(--ink-2); font-size: 15px; }
-.map-side { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 10px; max-height: 640px; overflow-y: auto; } /* เลื่อนทั้งแผงเมื่อกล่องวิธีใช้ KMZ ขยายจนเกินความสูง */
+.map-side { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 10px; max-height: var(--map-h); }
 .side-home { font-size: 14px; padding: 10px 12px; background: #fefce8; border: 1px dashed #fde047; border-radius: 10px; }
 .side-sub { display: block; font-size: 11.5px; color: var(--ink-3); }
 .map-controls { display: flex; gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); align-items: center; }
 .map-controls select { font-family: var(--font); font-size: 13px; padding: 3px 6px; border-radius: 7px; border: 1px solid var(--line); }
-/* วิธีใช้ไฟล์ KMZ — กล่องกดขยาย ใต้แถบคอนโทรลแผนที่ */
-.kmz-help { font-size: 12.5px; color: var(--ink-2); border: 1px dashed #c7d2fe; background: #f8faff; border-radius: 10px; padding: 7px 11px; }
-.kmz-help summary { cursor: pointer; font-weight: 700; color: var(--ink-2); user-select: none; }
-.kmz-help[open] summary { margin-bottom: 4px; }
-.kmz-help-body { line-height: 1.65; max-height: 240px; overflow-y: auto; padding-right: 5px; }
-.kmz-help-body p { margin: 6px 0 0; }
-.kmz-help-body b { display: inline-block; margin-top: 7px; }
-.kmz-help-body ol { margin: 4px 0 2px; padding-left: 21px; }
-.kmz-help-body li { margin: 2px 0; }
-.kmz-help-body a { color: var(--primary); font-weight: 600; }
-.kmz-help-note { color: var(--ink-3); font-size: 11.5px; }
-.side-list { overflow-y: auto; display: flex; flex-direction: column; gap: 3px; flex: 1 1 150px; min-height: 150px; }
+.side-list { overflow-y: auto; display: flex; flex-direction: column; gap: 3px; }
 .side-row { display: flex; align-items: center; gap: 9px; border: 0; background: transparent; font-family: var(--font); text-align: left; padding: 7px 9px; border-radius: 9px; cursor: pointer; font-size: 14px; }
 .side-row:hover { background: #f1f5f9; }
 .side-row.active { background: var(--primary-soft); outline: 1.5px solid #c7d2fe; }
@@ -295,6 +284,17 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; }
 /* ---------- modal ดูไฟล์ raw (ลิงก์อ้างอิงข้อมูลดิบ — ซ้อนบน modal fee ได้) ---------- */
 .raw-scrim { z-index: 80; }
 .raw-modal { z-index: 81; }
+/* ---------- modal วิธีใช้ไฟล์ KMZ (แท็บแผนที่) ---------- */
+.kmz-modal { width: min(620px, 94vw); }
+.kmz-modal .fee-head { background: linear-gradient(120deg, #4338ca, #6366f1); }
+.kmz-md { font-size: 14px; line-height: 1.75; color: var(--ink-2); }
+.kmz-md > b { display: block; margin-top: 14px; color: var(--ink); }
+.kmz-md > b:first-child { margin-top: 0; }
+.kmz-md ol { margin: 6px 0 10px; padding-left: 22px; }
+.kmz-md li { margin: 3px 0; }
+.kmz-md a { color: var(--primary); font-weight: 600; }
+.kmz-md p { margin: 6px 0; }
+.kmz-note { font-size: 12.5px; color: var(--ink-3); background: #f8fafc; border: 1px dashed var(--line); border-radius: 10px; padding: 9px 13px; margin-top: 12px; }
 a.rawlink { color: #b45309; cursor: pointer; text-decoration: underline; text-decoration-style: dashed; }
 .raw-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 0 0 10px; }
 .raw-src { margin: 0 0 8px; padding: 12px 14px; white-space: pre-wrap; word-break: break-word; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.3px; line-height: 1.65; color: var(--ink-2); background: #f8fafc; border: 1px solid var(--line); border-radius: 10px; }
