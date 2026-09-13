@@ -322,6 +322,10 @@ function popupNode(s) {
     <div class="popup-row">💰 ${s.cost != null ? `${fmtBaht(s.cost)}/ปี` : costRangeText(s) ? `${costRangeText(s)}/ปี ตามโปรแกรม` : "ไม่เปิดเผย"}${s.first_year_est ? ` · ปีแรก ~${fmtK(s.first_year_est)}` : ""}</div>
     <div class="popup-row">🗣️ ${lvText(s)} · ${ZH[s.chinese]}</div>
     <div class="popup-row" style="margin-top:4px">${s.oneliner ? inline(esc(s.oneliner)) : ""}</div>
+    <div class="popup-gm">
+      <a href="${gmPin(s)}" target="_blank" rel="noopener">🗺️ เปิดใน Google Maps</a>
+      <a href="${gmRoute(s)}" target="_blank" rel="noopener">🧭 เส้นทางจาก${distWord}</a>
+    </div>
     <div class="popup-btns">
       <button class="btn btn-primary btn-sm" data-x="detail">รายละเอียด</button>
       <button class="btn btn-sm" data-x="cmp">＋เทียบ</button>
@@ -348,6 +352,10 @@ function renderMapList() {
   }).join("");
   $$("[data-side]", el).forEach(b => b.onclick = () => selectSchool(bySlug(b.dataset.side)));
 }
+
+/* ---------- ลิงก์ออกไป Google Maps (เปิดหมุด/เส้นทางจากจุดตั้งต้นปัจจุบัน — ลากหมุดย้ายจุดแล้วลิงก์ตามไปด้วย) ---------- */
+const gmPin = s => `https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lon}`;
+const gmRoute = s => { const o = homePos(); return `https://www.google.com/maps/dir/?api=1&origin=${o.lat},${o.lon}&destination=${s.lat},${s.lon}&hl=th`; };
 
 /* ---------- เส้นทางสดจาก OSRM (ย้ายจุดตั้งต้นได้) ---------- */
 async function osrmJson(url) {
@@ -1462,6 +1470,7 @@ function openDetail(slug) {
     <div class="qf-grid">${qf.map(([k, v]) => `<div class="qf"><b>${k}</b>${esc(String(v))}</div>`).join("")}</div>
     <div class="drawer-btns">
       <button class="btn btn-sm" id="d-map">📍 ดูบนแผนที่</button>
+      <a class="btn btn-sm btn-gm" href="${gmRoute(s)}" target="_blank" rel="noopener" title="เปิดเส้นทางขับรถจากจุดตั้งต้นปัจจุบันใน Google Maps (มีจราจรจริง)">🧭 เส้นทาง Google Maps</a>
       <button class="btn btn-sm ${inCmp ? "btn-toggle-on" : ""}" id="d-cmp">${inCmp ? "✓ อยู่ในเทียบ" : "＋ เพิ่มเทียบ"}</button>
     </div>
     <div class="md">${mdToHtml(s.body)}</div>`;
