@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>เลือก ป.1 ให้ลูก — รามคำแหง/รัตพัทนา</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-logo">🎒</div>
+      <div>
+        <h1>เลือกโรงเรียน ป.1 ให้ลูก</h1>
+        <p class="brand-sub">ย่านรามคำแหง–รัตพัทนา · เป้าหมาย <b>ป.1 ปีการศึกษา 2570</b> (เปิดเทอม พ.ค. 2027)</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="badge badge-alert" id="badge-calendar" title="ดูปฏิทินรับสมัคร">⏰ หลายโรงเปิดรับสมัครแล้ว (ก.ย. 2569) →</button>
+      <span class="badge badge-dim" id="data-date"></span>
+    </div>
+  </div>
+  <nav class="tabs" id="tabs"></nav>
+</header>
+
+<main>
+  <!-- ภาพรวม -->
+  <section class="tabview" id="view-overview">
+    <div class="stat-grid" id="stat-grid"></div>
+    <h2 class="sec-title">จัดกลุ่มตามระดับความเข้มภาษาอังกฤษ <span class="sec-hint">เรียงจากน้อยไปมาก · กดชื่อโรงเพื่อดูรายละเอียด</span></h2>
+    <div class="tier-grid" id="tier-grid"></div>
+    <div class="overview-cols">
+      <div class="panel" id="panel-actions">
+        <h2 class="sec-title">✅ Next actions <span class="sec-hint">เช็คได้ — บันทึกในเครื่อง</span></h2>
+        <div id="action-list" class="action-list"></div>
+      </div>
+      <div class="panel">
+        <h2 class="sec-title">📌 ข้อสังเกตข้ามโรง + ช่องว่างข้อมูล</h2>
+        <div class="md" id="overview-notes"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ปฏิทินรับสมัคร -->
+  <section class="tabview" id="view-calendar" hidden>
+    <div class="cal-groups" id="cal-groups"></div>
+    <div class="panel cal-panel">
+      <div class="chart-head">
+        <h2 class="sec-title">🗓️ ไทม์ไลน์รับสมัคร ป.1 ปี 2570 <span class="sec-hint">กดชื่อโรง/แถบวันที่เพื่อดูรายละเอียด</span></h2>
+      </div>
+      <div class="cal-scroll"><div class="cal-chart" id="cal-chart"></div></div>
+      <div class="cal-legend" id="cal-legend"></div>
+    </div>
+    <h2 class="sec-title">รายละเอียดรายโรง <span class="sec-hint">กำหนดการ/ค่าสมัคร/เกณฑ์อายุ/ช่องทาง</span></h2>
+    <div class="cal-cards" id="cal-cards"></div>
+    <p class="footnote">แหล่งข้อมูล: สำรวจเว็บทางการ + โพสต์ที่เข้าถึงได้ ณ วันที่ประกอบข้อมูล (ดูในการ์ดแต่ละโรง) · (?) = อ่านจากแหล่งไม่ชัด · แถบ "คาด" = อนุมานจาก pattern ปีก่อน ไม่ใช่ประกาศของโรง</p>
+  </section>
+
+  <!-- แผนที่ -->
+  <section class="tabview" id="view-map" hidden>
+    <div class="map-layout">
+      <div class="map-side">
+        <div class="side-home">
+          <span id="home-emoji">📍</span> <b id="home-label"></b><span id="home-coord" class="side-coord"></span>
+          <span class="side-sub" id="home-hint">ลากหมุดเพื่อย้ายจุดตั้งต้น · ระยะในแท็บนี้ = <b>เส้นทางขับรถ</b> · <b>*</b> = ระยะตรง · กดโรงเพื่อลากเส้นทาง</span>
+          <div class="home-actions">
+            <button class="btn btn-sm" id="home-pick">📍 เลือกจุดตั้งต้นใหม่</button>
+            <button class="btn btn-sm" id="home-reset" hidden>↩️ กลับจุดตั้งต้นเริ่มต้น</button>
+          </div>
+          <div class="route-status" id="route-status" hidden></div>
+        </div>
+        <div class="map-controls">
+          <label>สีหมุด: <select id="map-color-mode">
+            <option value="level">ระดับอังกฤษ</option>
+            <option value="cost">ค่าเล่าเรียน/ปี</option>
+            <option value="chinese">ภาษาจีน</option>
+          </select></label>
+          <label><input type="checkbox" id="map-rings" checked> วงรัศมี 3/5/10 กม.</label>
+        </div>
+        <div class="side-list" id="map-list"></div>
+      </div>
+      <div class="map-box"><div id="map"></div><div id="map-fallback" hidden>🗺️ โหลดแผนที่ไม่ได้ — ต้องเชื่อมต่ออินเทอร์เน็ต (ส่วนอื่นของหน้าใช้ได้ปกติ)</div></div>
+    </div>
+    <p class="footnote map-note" id="map-note">🚗 เส้นทาง/เวลาคำนวณจาก OSRM (OpenStreetMap) — เส้นทางสั้นที่สุดตามถนน ไม่รวมรถติด · ย้ายจุดตั้งต้นแล้วเว็บดึงเส้นทางใหม่สด (ต้องออนไลน์) · วงรัศมี 3/5/10 กม. เป็นระยะตรง</p>
+  </section>
+
+  <!-- โรงเรียน: การ์ด + ตาราง เป็นมุมมองสลับได้ในหน้าเดียว ใช้ชุดตัวกรองร่วมกัน -->
+  <section class="tabview" id="view-schools" hidden>
+    <div class="filter-bar" id="filter-bar"></div>
+    <div class="schools-toolbar">
+      <div class="result-count" id="school-count"></div>
+      <div class="seg view-seg" id="view-seg">
+        <button data-view="cards">▦ การ์ด</button>
+        <button data-view="table">☰ ตาราง</button>
+      </div>
+    </div>
+    <div class="card-grid" id="school-grid"></div>
+    <div id="table-block" hidden>
+      <div class="table-wrap panel">
+        <table class="schools-table" id="schools-table"></table>
+      </div>
+      <p class="footnote">⚠️ ตัวเลขค่าใช้จ่ายอ้างอิงปีการศึกษาต่างกัน (2567–2570) — ดูคอลัมน์ "ปีอ้างอิง" เสมอ · (?) = อ่านจากแหล่งไม่ชัด/ทุติยภูมิ</p>
+    </div>
+  </section>
+
+  <!-- ค่าใช้จ่าย -->
+  <section class="tabview" id="view-cost" hidden>
+    <div class="filter-bar" id="cost-filter-bar"></div>
+    <div class="result-count" id="cost-count"></div>
+    <div class="panel">
+      <div class="chart-head">
+        <h2 class="sec-title">ค่าเล่าเรียน ป.1 ต่อปี (บาท) <span class="sec-hint">🖱️ กดที่แถบ = ดู breakdown รายการค่าใช้จ่ายแต่ละโรง · ▨ แถบลาย = ส่วนที่จ่ายเพิ่มปีแรก (ค่าครั้งเดียว/นักเรียนใหม่) · ◆ = ค่าใช้จ่ายปีแรก (รวมค่าครั้งเดียวแล้ว) · โรงที่ราคาต่างตามโปรแกรม (สามัญ/EP/IEP) แยกเป็นคนละแถว · (?) = ตัวเลขจากแหล่งไม่ชัด</span></h2>
+        <select id="cost-sort">
+          <option value="cost">เรียงตามราคา</option>
+          <option value="firstyear">เรียงตามค่าใช้จ่ายปีแรก</option>
+          <option value="name">เรียงตามชื่อโรงเรียน</option>
+          <option value="level">เรียงตามระดับอังกฤษ</option>
+          <option value="dist">เรียงตามระยะ</option>
+        </select>
+      </div>
+      <div id="cost-chart" class="cost-chart"></div>
+      <div id="cost-unknown" class="cost-unknown"></div>
+    </div>
+    <div class="panel md" id="cost-doc"></div>
+  </section>
+
+  <!-- เทียบรายโรง -->
+  <section class="tabview" id="view-compare" hidden>
+    <div id="compare-area"></div>
+  </section>
+
+  <!-- เรดาร์จุดเด่น–จุดสังเกต -->
+  <section class="tabview" id="view-radar" hidden>
+    <div class="panel radar-panel">
+      <div class="chart-head">
+        <h2 class="sec-title">🕸️ เรดาร์ จุดเด่น–จุดสังเกต <span class="sec-hint">ติ๊กโรงจากรายการด้านซ้ายเพื่อขึ้นกราฟ (หรือกดการ์ดด้านล่าง) — ได้ 2–4 โปรแกรม</span></h2>
+      </div>
+      <div class="radar-layout">
+        <div class="radar-pick" id="radar-pick"></div>
+        <div class="radar-chart-wrap" id="radar-chart"></div>
+        <div class="radar-side" id="radar-side"></div>
+      </div>
+      <div id="radar-values"></div>
+    </div>
+    <div class="panel" id="radar-wiki"></div>
+    <h2 class="sec-title">🏫 ทุกโรง ทุกโปรแกรม <span class="sec-hint">จุดเด่น–จุดสังเกตคำนวณจากข้อมูลใน wiki · กดการ์ดเพื่อขึ้นกราฟ · กดชื่อโรงดูรายละเอียด</span></h2>
+    <div class="radar-grid" id="radar-grid"></div>
+    <p class="footnote">คะแนน 1–5 ทุกแกนเป็นการ <b>normalize ข้อมูลจริงจาก wiki</b> (ระดับโปรแกรม/ระยะตรง/ค่าเล่าเรียน/จีน/มัธยมต่อ/ความโปร่งใสของข้อมูล) — ไม่ใช่การตัดสินคุณภาพโรงเรียน และพื้นที่รูปไม่ใช่คะแนนรวม · แกน 💸 "ค่าใช้จ่าย" = ถูกกว่ายิ่งกว้าง <b>และปีอ้างอิงราคาต่างกัน (2567–2570) ดูปีในตารางเสมอ</b> · เส้นประ = โรงนั้นมีแกนที่ไม่มีข้อมูล จุดจะลงไปที่จุดกึ่งกลางพร้อมเครื่องหมาย ? · น้ำหนักความสำคัญแต่ละแกนเป็นของผู้ปกครอง (ยังไม่ได้กำหนดใน criteria.md)</p>
+  </section>
+
+  <!-- เอกสาร -->
+  <section class="tabview" id="view-docs" hidden>
+    <div class="docs-toolbar">
+      <div class="doc-nav" id="doc-nav"></div>
+      <button class="btn btn-sm" id="wiki-dl" title="ไฟล์ .md ทุกไฟล์ของ wiki ตามโครงสร้างโฟลเดอร์จริง (รวม frontmatter) บรรจุเป็น .zip">⬇️ ดาวน์โหลด wiki .md ทั้งหมด</button>
+      <button class="btn btn-sm" id="brochure-dl" title="โปสเตอร์รับสมัคร/หน้าสมัคร ที่เก็บไว้ใน raw/downloads/ — เลือกโหลดทีละไฟล์หรือทั้งหมดเป็น .zip">🖼️ ดาวน์โหลดโบรชัวร์/ประกาศ</button>
+    </div>
+    <div class="panel md" id="doc-body"></div>
+  </section>
+</main>
+
+<!-- แถบเทียบด้านล่าง -->
+<div class="compare-tray" id="compare-tray" hidden>
+  <span class="tray-label">เทียบ:</span>
+  <div class="tray-chips" id="tray-chips"></div>
+  <button class="btn btn-primary btn-sm" id="tray-go">เทียบแบบละเอียด →</button>
+  <button class="btn btn-ghost btn-sm" id="tray-clear">ล้าง</button>
+</div>
+
+<!-- แผงรายละเอียดโรง -->
+<div class="drawer-scrim" id="drawer-scrim" hidden></div>
+<aside class="drawer" id="drawer" hidden></aside>
+
+<!-- modal breakdown รายการค่าใช้จ่าย (กดที่แถบในแท็บค่าใช้จ่าย) -->
+<div class="drawer-scrim fee-scrim" id="fee-scrim" hidden></div>
+<div class="fee-modal" id="fee-modal" hidden></div>
+
+<!-- modal ดูไฟล์ข้อมูลดิบ raw/*.md (กดลิงก์อ้างอิง raw ในหน้าโรง/เอกสาร — ฝังมากับ data.js) -->
+<div class="drawer-scrim fee-scrim raw-scrim" id="raw-scrim" hidden></div>
+<div class="fee-modal raw-modal" id="raw-modal" hidden></div>
+
+<!-- modal ดาวน์โหลดโบรชัวร์/ประกาศ raw/downloads/ (สำเนาอยู่ที่ web/assets/brochures/) -->
+<div class="drawer-scrim fee-scrim" id="brochure-scrim" hidden></div>
+<div class="fee-modal" id="brochure-modal" hidden></div>
+
+<footer class="footer">
+  <p>ข้อมูลสร้างจาก <b>wiki/</b> ของโปรเจกต์ (source of truth) · อัปเดตข้อมูลใหม่: แก้ wiki แล้วรัน <code>python3 web/build.py</code> · <button class="btn btn-sm" id="wiki-dl-foot">⬇️ ดาวน์โหลด wiki ทั้งหมด (.zip)</button> <button class="btn btn-sm" id="brochure-dl-foot">🖼️ ดาวน์โหลดโบรชัวร์/ประกาศ</button></p>
+  <p class="footnote">แท็บแผนที่: ระยะ/เส้นทางขับรถจาก OSRM (OpenStreetMap) ไม่รวมการจราจร · แท็บอื่น: ระยะตรง (Haversine) · ค่าใช้จ่ายกระจายปี 2567–2570 ห้ามเทียบข้ามปีโดยไม่ดูปีอ้างอิง · (?) = ไม่แน่นอนตามแหล่งธรรมชาติ</p>
+  <div class="disclaimer">
+    <b>Disclaimer:</b> เว็บไซต์นี้จัดทำขึ้นเพื่อเป็นข้อมูลประกอบการพิจารณาเลือกโรงเรียนเท่านั้น ข้อมูลรวบรวมจากแหล่งข้อมูลสาธารณะและผ่านกระบวนการ AI-assisted research ซึ่งอาจมีความคลาดเคลื่อน ไม่ครบถ้วน หรือล้าสมัย และไม่ควรถือเป็นข้อสรุปหรือเกณฑ์ชี้วัดในการตัดสินใจ ผู้ปกครองควรพิจารณาความต้องการของเด็กและข้อจำกัดของครอบครัวแต่ละราย รวมถึงตรวจสอบข้อมูลกับโรงเรียนโดยตรงและเยี่ยมชมโรงเรียนก่อนตัดสินใจ ผู้จัดทำไม่รับรองความถูกต้องหรือความครบถ้วนของข้อมูล และไม่รับผิดชอบต่อความเสียหายหรือผลกระทบใด ๆ จากการนำข้อมูลไปใช้ ทั้งนี้ ข้อมูลดังกล่าวไม่ถือเป็นคำแนะนำทางวิชาชีพหรือหลักฐานที่ก่อให้เกิดผลผูกพันทางกฎหมาย
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
