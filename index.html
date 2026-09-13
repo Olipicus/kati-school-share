@@ -22,7 +22,7 @@
       </div>
     </div>
     <div class="topbar-right">
-      <button class="badge badge-alert" id="badge-calendar" title="ดูปฏิทินรับสมัคร">⏰ หลายโรงเปิดรับสมัครแล้ว (ก.ย. 2569) →</button>
+      <button class="badge badge-alert" id="badge-calendar" title="ดูปฏิทินรับสมัคร">⏰ หลายโรงเรียนเปิดรับสมัครแล้ว (ก.ย. 2569) →</button>
       <span class="badge badge-dim" id="data-date"></span>
     </div>
   </div>
@@ -33,7 +33,7 @@
   <!-- ภาพรวม -->
   <section class="tabview" id="view-overview">
     <div class="stat-grid" id="stat-grid"></div>
-    <h2 class="sec-title">จัดกลุ่มตามระดับความเข้มภาษาอังกฤษ <span class="sec-hint">เรียงจากน้อยไปมาก · กดชื่อโรงเพื่อดูรายละเอียด</span></h2>
+    <h2 class="sec-title">จัดกลุ่มตามระดับความเข้มภาษาอังกฤษ <span class="sec-hint">เรียงจากน้อยไปมาก · กดชื่อโรงเรียนเพื่อดูรายละเอียด</span></h2>
     <div class="tier-grid" id="tier-grid"></div>
     <div class="overview-cols">
       <div class="panel" id="panel-actions">
@@ -41,7 +41,7 @@
         <div id="action-list" class="action-list"></div>
       </div>
       <div class="panel">
-        <h2 class="sec-title">📌 ข้อสังเกตข้ามโรง + ช่องว่างข้อมูล</h2>
+        <h2 class="sec-title">📌 ข้อสังเกตข้ามโรงเรียน + ช่องว่างข้อมูล</h2>
         <div class="md" id="overview-notes"></div>
       </div>
     </div>
@@ -52,14 +52,14 @@
     <div class="cal-groups" id="cal-groups"></div>
     <div class="panel cal-panel">
       <div class="chart-head">
-        <h2 class="sec-title">🗓️ ไทม์ไลน์รับสมัคร ป.1 ปี 2570 <span class="sec-hint">กดชื่อโรง/แถบวันที่เพื่อดูรายละเอียด</span></h2>
+        <h2 class="sec-title">🗓️ ไทม์ไลน์รับสมัคร ป.1 ปี 2570 <span class="sec-hint">กดชื่อโรงเรียน/แถบวันที่เพื่อดูรายละเอียด</span></h2>
       </div>
       <div class="cal-scroll"><div class="cal-chart" id="cal-chart"></div></div>
       <div class="cal-legend" id="cal-legend"></div>
     </div>
-    <h2 class="sec-title">รายละเอียดรายโรง <span class="sec-hint">กำหนดการ/ค่าสมัคร/เกณฑ์อายุ/ช่องทาง</span></h2>
+    <h2 class="sec-title">รายละเอียดรายโรงเรียน <span class="sec-hint">กำหนดการ/ค่าสมัคร/เกณฑ์อายุ/ช่องทาง</span></h2>
     <div class="cal-cards" id="cal-cards"></div>
-    <p class="footnote">แหล่งข้อมูล: สำรวจเว็บทางการ + โพสต์ที่เข้าถึงได้ ณ วันที่ประกอบข้อมูล (ดูในการ์ดแต่ละโรง) · (?) = อ่านจากแหล่งไม่ชัด · แถบ "คาด" = อนุมานจาก pattern ปีก่อน ไม่ใช่ประกาศของโรง</p>
+    <p class="footnote">แหล่งข้อมูล: สำรวจเว็บทางการ + โพสต์ที่เข้าถึงได้ ณ วันที่ประกอบข้อมูล (ดูในการ์ดแต่ละโรงเรียน) · (?) = อ่านจากแหล่งไม่ชัด · แถบ "คาด" = อนุมานจาก pattern ปีก่อน ไม่ใช่ประกาศของโรงเรียน</p>
   </section>
 
   <!-- แผนที่ -->
@@ -68,7 +68,7 @@
       <div class="map-side">
         <div class="side-home">
           <span id="home-emoji">📍</span> <b id="home-label"></b><span id="home-coord" class="side-coord"></span>
-          <span class="side-sub" id="home-hint">ลากหมุดเพื่อย้ายจุดตั้งต้น · ระยะในแท็บนี้ = <b>เส้นทางขับรถ</b> · <b>*</b> = ระยะตรง · กดโรงเพื่อลากเส้นทาง</span>
+          <span class="side-sub" id="home-hint">ลากหมุดเพื่อย้ายจุดตั้งต้น · ระยะในแท็บนี้ = <b>เส้นทางขับรถ</b> · <b>*</b> = ระยะตรง · กดโรงเรียนเพื่อลากเส้นทาง</span>
           <div class="home-actions">
             <button class="btn btn-sm" id="home-pick">📍 เลือกจุดตั้งต้นใหม่</button>
             <button class="btn btn-sm" id="home-reset" hidden>↩️ กลับจุดตั้งต้นเริ่มต้น</button>
@@ -115,7 +115,7 @@
     <div class="result-count" id="cost-count"></div>
     <div class="panel">
       <div class="chart-head">
-        <h2 class="sec-title">ค่าเล่าเรียน ป.1 ต่อปี (บาท) <span class="sec-hint">🖱️ กดที่แถบ = ดู breakdown รายการค่าใช้จ่ายแต่ละโรง · ▨ แถบลาย = ส่วนที่จ่ายเพิ่มปีแรก (ค่าครั้งเดียว/นักเรียนใหม่) · ◆ = ค่าใช้จ่ายปีแรก (รวมค่าครั้งเดียวแล้ว) · โรงที่ราคาต่างตามโปรแกรม (สามัญ/EP/IEP) แยกเป็นคนละแถว · (?) = ตัวเลขจากแหล่งไม่ชัด</span></h2>
+        <h2 class="sec-title">ค่าเล่าเรียน ป.1 ต่อปี (บาท) <span class="sec-hint">🖱️ กดที่แถบ = ดู breakdown รายการค่าใช้จ่ายแต่ละโรงเรียน · ▨ แถบลาย = ส่วนที่จ่ายเพิ่มปีแรก (ค่าครั้งเดียว/นักเรียนใหม่) · ◆ = ค่าใช้จ่ายปีแรก (รวมค่าครั้งเดียวแล้ว) · โรงเรียนที่ราคาต่างตามโปรแกรม (สามัญ/EP/IEP) แยกเป็นคนละแถว · (?) = ตัวเลขจากแหล่งไม่ชัด</span></h2>
         <select id="cost-sort">
           <option value="cost">เรียงตามราคา</option>
           <option value="firstyear">เรียงตามค่าใช้จ่ายปีแรก</option>
@@ -139,7 +139,7 @@
   <section class="tabview" id="view-radar" hidden>
     <div class="panel radar-panel">
       <div class="chart-head">
-        <h2 class="sec-title">🕸️ เรดาร์ จุดเด่น–จุดสังเกต <span class="sec-hint">ติ๊กโรงจากรายการด้านซ้ายเพื่อขึ้นกราฟ (หรือกดการ์ดด้านล่าง) — ได้ 2–4 โปรแกรม</span></h2>
+        <h2 class="sec-title">🕸️ เรดาร์ จุดเด่น–จุดสังเกต <span class="sec-hint">ติ๊กโรงเรียนจากรายการด้านซ้ายเพื่อขึ้นกราฟ (หรือกดการ์ดด้านล่าง) — ได้ 2–4 โปรแกรม</span></h2>
       </div>
       <div class="radar-layout">
         <div class="radar-pick" id="radar-pick"></div>
@@ -149,9 +149,9 @@
       <div id="radar-values"></div>
     </div>
     <div class="panel" id="radar-wiki"></div>
-    <h2 class="sec-title">🏫 ทุกโรง ทุกโปรแกรม <span class="sec-hint">จุดเด่น–จุดสังเกตคำนวณจากข้อมูลใน wiki · กดการ์ดเพื่อขึ้นกราฟ · กดชื่อโรงดูรายละเอียด</span></h2>
+    <h2 class="sec-title">🏫 ทุกโรงเรียน ทุกโปรแกรม <span class="sec-hint">จุดเด่น–จุดสังเกตคำนวณจากข้อมูลใน wiki · กดการ์ดเพื่อขึ้นกราฟ · กดชื่อโรงเรียนดูรายละเอียด</span></h2>
     <div class="radar-grid" id="radar-grid"></div>
-    <p class="footnote">คะแนน 1–5 ทุกแกนเป็นการ <b>normalize ข้อมูลจริงจาก wiki</b> (ระดับโปรแกรม/ระยะตรง/ค่าเล่าเรียน/จีน/มัธยมต่อ/ความโปร่งใสของข้อมูล) — ไม่ใช่การตัดสินคุณภาพโรงเรียน และพื้นที่รูปไม่ใช่คะแนนรวม · แกน 💸 "ค่าใช้จ่าย" = ถูกกว่ายิ่งกว้าง <b>และปีอ้างอิงราคาต่างกัน (2567–2570) ดูปีในตารางเสมอ</b> · เส้นประ = โรงนั้นมีแกนที่ไม่มีข้อมูล จุดจะลงไปที่จุดกึ่งกลางพร้อมเครื่องหมาย ? · น้ำหนักความสำคัญแต่ละแกนเป็นของผู้ปกครอง (ยังไม่ได้กำหนดใน criteria.md)</p>
+    <p class="footnote">คะแนน 1–5 ทุกแกนเป็นการ <b>normalize ข้อมูลจริงจาก wiki</b> (ระดับโปรแกรม/ระยะตรง/ค่าเล่าเรียน/จีน/มัธยมต่อ/ความโปร่งใสของข้อมูล) — ไม่ใช่การตัดสินคุณภาพโรงเรียน และพื้นที่รูปไม่ใช่คะแนนรวม · แกน 💸 "ค่าใช้จ่าย" = ถูกกว่ายิ่งกว้าง <b>และปีอ้างอิงราคาต่างกัน (2567–2570) ดูปีในตารางเสมอ</b> · เส้นประ = โรงเรียนนั้นมีแกนที่ไม่มีข้อมูล จุดจะลงไปที่จุดกึ่งกลางพร้อมเครื่องหมาย ? · น้ำหนักความสำคัญแต่ละแกนเป็นของผู้ปกครอง (ยังไม่ได้กำหนดใน criteria.md)</p>
   </section>
 
   <!-- เอกสาร -->
@@ -190,7 +190,7 @@
 <div class="fee-modal" id="brochure-modal" hidden></div>
 
 <footer class="footer">
-  <p>ข้อมูลสร้างจาก <b>wiki/</b> ของโปรเจกต์ (source of truth) · อัปเดตข้อมูลใหม่: แก้ wiki แล้วรัน <code>python3 web/build.py</code> · <button class="btn btn-sm" id="wiki-dl-foot">⬇️ ดาวน์โหลด wiki ทั้งหมด (.zip)</button> <button class="btn btn-sm" id="brochure-dl-foot">🖼️ ดาวน์โหลดโบรชัวร์/ประกาศ</button></p>
+  <p>ข้อมูลสร้างจาก <b>wiki/</b> ของโปรเจกต์ (source of truth) · <button class="btn btn-sm" id="wiki-dl-foot">⬇️ ดาวน์โหลด wiki ทั้งหมด (.zip)</button> <button class="btn btn-sm" id="brochure-dl-foot">🖼️ ดาวน์โหลดโบรชัวร์/ประกาศ</button></p>
   <p class="footnote">แท็บแผนที่: ระยะ/เส้นทางขับรถจาก OSRM (OpenStreetMap) ไม่รวมการจราจร · แท็บอื่น: ระยะตรง (Haversine) · ค่าใช้จ่ายกระจายปี 2567–2570 ห้ามเทียบข้ามปีโดยไม่ดูปีอ้างอิง · (?) = ไม่แน่นอนตามแหล่งธรรมชาติ</p>
   <div class="disclaimer">
     <b>Disclaimer:</b> เว็บไซต์นี้จัดทำขึ้นเพื่อเป็นข้อมูลประกอบการพิจารณาเลือกโรงเรียนเท่านั้น ข้อมูลรวบรวมจากแหล่งข้อมูลสาธารณะและผ่านกระบวนการ AI-assisted research ซึ่งอาจมีความคลาดเคลื่อน ไม่ครบถ้วน หรือล้าสมัย และไม่ควรถือเป็นข้อสรุปหรือเกณฑ์ชี้วัดในการตัดสินใจ ผู้ปกครองควรพิจารณาความต้องการของเด็กและข้อจำกัดของครอบครัวแต่ละราย รวมถึงตรวจสอบข้อมูลกับโรงเรียนโดยตรงและเยี่ยมชมโรงเรียนก่อนตัดสินใจ ผู้จัดทำไม่รับรองความถูกต้องหรือความครบถ้วนของข้อมูล และไม่รับผิดชอบต่อความเสียหายหรือผลกระทบใด ๆ จากการนำข้อมูลไปใช้ ทั้งนี้ ข้อมูลดังกล่าวไม่ถือเป็นคำแนะนำทางวิชาชีพหรือหลักฐานที่ก่อให้เกิดผลผูกพันทางกฎหมาย

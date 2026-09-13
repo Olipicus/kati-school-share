@@ -126,6 +126,10 @@ main { max-width: 1240px; margin: 22px auto 90px; padding: 0 20px; }
 .fctrl-slider { gap: 12px; }
 .fval { flex: none; min-width: 106px; text-align: center; font-size: 12.5px; font-weight: 700; color: var(--primary); background: var(--primary-soft); border-radius: 999px; padding: 3px 12px; font-variant-numeric: tabular-nums; }
 .fctrl input[type=range] { flex: 1; min-width: 0; accent-color: var(--primary); }
+/* ช่องพิมพ์เลขคู่สไลเดอร์ — specificity สูงกว่า .fctrl input[type=text] กัน flex:1 ยืดเต็มแถว */
+.fctrl input[type=text].fnum { flex: none; width: 88px; font-size: 13px; font-weight: 600; padding: 6px 9px; border-radius: 8px; text-align: right; font-variant-numeric: tabular-nums; }
+.fnum::placeholder { color: var(--ink-3); font-weight: 400; }
+.fctrl input[type=text].fnum:focus-visible { outline: 2px solid #c7d2fe; border-color: var(--primary); }
 .fchips { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
 .fchips button { border: 1px solid var(--line); background: #fff; font-family: var(--font); font-size: 12.5px; font-weight: 600; color: var(--ink-2); padding: 6px 14px; border-radius: 999px; cursor: pointer; }
 .fchips button:hover { border-color: #c7d2fe; color: var(--primary); }

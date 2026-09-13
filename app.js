@@ -23,7 +23,7 @@ const ZH = { intensive: "จีนเข้มข้น", some: "มีจีน
 const DOC_ORDER = ["overview", "criteria", "program-types", "school-groups", "cost", "cost-breakdown", "programs", "activities", "contacts", "admission-calendar"];
 const TABS = [
   ["overview", "📋 ภาพรวม"], ["calendar", "🗓️ ปฏิทินรับสมัคร"], ["schools", "🏫 โรงเรียน"],
-  ["map", "🗺️ แผนที่"], ["cost", "💰 ค่าใช้จ่าย"], ["compare", "⚖️ เทียบรายโรง"], ["radar", "🕸️ จุดเด่น"], ["docs", "📖 เอกสาร"],
+  ["map", "🗺️ แผนที่"], ["cost", "💰 ค่าใช้จ่าย"], ["compare", "⚖️ เทียบรายโรงเรียน"], ["radar", "🕸️ จุดเด่น"], ["docs", "📖 เอกสาร"],
 ];
 if (!D.admission) TABS.splice(TABS.findIndex(t => t[0] === "calendar"), 1); // wiki ยังไม่มีข้อมูลปฏิทิน = ซ่อนแท็บ
 
@@ -198,10 +198,10 @@ function renderOverview() {
   const costs = withCost.map(s => costOf(s));
   const nSchools = new Set(D.schools.map(s => s.school_base)).size;  // หน้าแยกโปรแกรม (EP/IEP) นับรวมเป็นโรงเดียว
   const stats = [
-    [nSchools + " โรง · " + D.schools.length + " โปรแกรม", "ในลิสต์ รัศมี ~10 กม. รอบ" + distWord + (SHARE ? " (อนุบาลบ้านสนุกคิด)" : "") + " — โรงที่มีหลายแผนการเรียน (สามัญ/EP/IEP) แยกนับเป็นโปรแกรม"],
+    [nSchools + " โรงเรียน · " + D.schools.length + " โปรแกรม", "ในลิสต์ รัศมี ~10 กม. รอบ" + distWord + (SHARE ? " (อนุบาลบ้านสนุกคิด)" : "") + " — โรงเรียนที่มีหลายแผนการเรียน (สามัญ/EP/IEP) แยกนับเป็นโปรแกรม"],
     [Math.min(...D.schools.map(s => s.distance_km)) + "–" + Math.max(...D.schools.map(s => s.distance_km)) + " กม.", "ระยะตรงจาก" + distWord + " (ขับจริง ×1.3–1.6)"],
     ["฿" + Math.min(...costs).toLocaleString() + "–" + Math.max(...costs).toLocaleString(), "ค่าเล่าเรียน/ปี (" + withCost.length + "/" + D.schools.length + " โปรแกรมเปิดเผยราคา)"],
-    [new Set(D.schools.filter(s => s.secondary).map(s => s.school_base)).size + " โรง", "สอนต่อถึงมัธยมในที่เดียวกัน"],
+    [new Set(D.schools.filter(s => s.secondary).map(s => s.school_base)).size + " โรงเรียน", "สอนต่อถึงมัธยมในที่เดียวกัน"],
   ];
   $("#stat-grid").innerHTML = stats.map(([b, s]) => `<div class="stat"><b>${b}</b><span>${s}</span></div>`).join("");
 
@@ -386,19 +386,19 @@ async function recalcRoutes() {
         ? { km: +(dist[i + 1] / 1000).toFixed(1), min: dur && dur[i + 1] != null ? Math.round(dur[i + 1] / 60) : null }
         : null;
     });
-    setRouteStatus(`✓ คำนวณเส้นทางใหม่จากจุดตั้งต้นแล้ว (${targets.length} โรง) — เส้นทางวาดตอนกดเลือกโรง`);
+    setRouteStatus(`✓ คำนวณเส้นทางใหม่จากจุดตั้งต้นแล้ว (${targets.length} โรงเรียน) — เส้นทางวาดตอนกดเลือกโรงเรียน`);
   } catch (e) { // table ล่ม → ทีละโรงแบบ route เต็ม (ได้ geometry มาด้วย)
     let ok = 0;
     for (let i = 0; i < targets.length; i++) {
       if (state.origin !== o) return;
       const s = targets[i];
-      setRouteStatus(`กำลังคำนวณเส้นทางทีละโรง ${i + 1}/${targets.length}…`);
+      setRouteStatus(`กำลังคำนวณเส้นทางทีละโรงเรียน ${i + 1}/${targets.length}…`);
       try { liveRoutes[s.slug] = await fetchRoute(o, s); ok++; }
       catch (e2) { liveRoutes[s.slug] = null; }
       renderMapList();
       if (i < targets.length - 1) await new Promise(r2 => setTimeout(r2, 300));
     }
-    setRouteStatus(ok ? `✓ คำนวณเส้นทางใหม่แล้ว (${ok}/${targets.length} โรง)` : "✗ คำนวณเส้นทางไม่ได้ (ต้องออนไลน์) — แสดงระยะตรงแทน");
+    setRouteStatus(ok ? `✓ คำนวณเส้นทางใหม่แล้ว (${ok}/${targets.length} โรงเรียน)` : "✗ คำนวณเส้นทางไม่ได้ (ต้องออนไลน์) — แสดงระยะตรงแทน");
   }
   renderMapList();
 }
@@ -488,6 +488,24 @@ function patchResetBtn(sel, n) { // ปุ่มล้างตัวกรอ�
   b.disabled = !n;
   b.classList.toggle("has-active", !!n);
 }
+/* คู่สไลเดอร์ + ช่องพิมพ์เลข (งบ/ราคา) — ลากหรือพิมพ์ตรง ๆ ก็ได้ ค่า sync กันเสมอ
+   พิมพ์ได้ "150000" / "150,000" / "150k" · เกินช่วงปัดเข้า [min,400000] · ครบ 400000 = ทั้งหมด
+   ระหว่างพิมพ์ไม่เขียนทับช่อง (กัน caret เด้ง) — จัดรูปช่องตอน blur */
+function wireBudgetNum(numSel, rangeSel, outSel, minV, apply) {
+  const num = $(numSel), range = $(rangeSel), out = $(outSel);
+  const commit = v => {
+    v = Math.round(Math.max(minV, Math.min(400000, v)));
+    range.value = v;
+    out.textContent = v >= 400000 ? "ทั้งหมด" : "≤ " + fmtBaht(v);
+    apply(v);
+  };
+  range.oninput = () => { commit(+range.value); num.value = range.value; };
+  num.oninput = () => {
+    const m = num.value.replace(/[,\s]/g, "").match(/^(\d+(?:\.\d+)?)(k?)$/i);
+    if (m) commit(parseFloat(m[1]) * (m[2] ? 1000 : 1));
+  };
+  num.onblur = () => { num.value = range.value; };
+}
 function renderFilterBar() {
   const f = state.filters;
   $("#filter-bar").innerHTML = `
@@ -496,19 +514,19 @@ function renderFilterBar() {
       <button class="filter-reset" id="f-reset" title="คืนค่าทุกตัวกรองเป็นค่าเริ่มต้น">↺ ล้างตัวกรอง</button>
     </div>
     <div class="frow">
-      <span class="flabel" title="หาจากชื่อโรง ชื่อย่อ โปรแกรม และคำในคำโปรยของการ์ด">🔍 ค้นหา</span>
-      <div class="fctrl"><input type="text" id="f-q" placeholder="ชื่อโรง / โปรแกรม…" value="${esc(f.q)}"></div>
+      <span class="flabel" title="หาจากชื่อโรงเรียน ชื่อย่อ โปรแกรม และคำในคำโปรยของการ์ด">🔍 ค้นหา</span>
+      <div class="fctrl"><input type="text" id="f-q" placeholder="ชื่อโรงเรียน / โปรแกรม…" value="${esc(f.q)}"></div>
     </div>
     <div class="frow">
-      <span class="flabel" title="โรงหลายโปรแกรม (สามัญ/EP/IEP) ใช้ราคาต่ำสุดของโปรแกรม · โรงที่ไม่เปิดเผยราคาจะถูกหรี่ไว้">💰 งบค่าเล่าเรียน</span>
-      <div class="fctrl fctrl-slider"><output class="fval" id="f-budget-v">${f.budget >= 400000 ? "ทั้งหมด" : "≤ " + fmtBaht(f.budget)}</output><input type="range" id="f-budget" min="37000" max="400000" step="1000" value="${f.budget}" aria-label="งบค่าเล่าเรียนสูงสุดต่อปี"></div>
+      <span class="flabel" title="โรงเรียนหลายโปรแกรม (สามัญ/EP/IEP) ใช้ราคาต่ำสุดของโปรแกรม · โรงเรียนที่ไม่เปิดเผยราคาจะถูกหรี่ไว้">💰 งบค่าเล่าเรียน</span>
+      <div class="fctrl fctrl-slider"><output class="fval" id="f-budget-v">${f.budget >= 400000 ? "ทั้งหมด" : "≤ " + fmtBaht(f.budget)}</output><input type="range" id="f-budget" min="37000" max="400000" step="1000" value="${f.budget}" aria-label="งบค่าเล่าเรียนสูงสุดต่อปี"><input type="text" class="fnum" id="f-budget-n" inputmode="numeric" value="${f.budget}" placeholder="บาท/ปี" title="พิมพ์ตัวเลขได้ เช่น 150000 หรือ 150k" aria-label="พิมพ์งบค่าเล่าเรียนสูงสุดต่อปี (บาท)"></div>
     </div>
     <div class="frow">
       <span class="flabel" title="ระยะตรงจาก${distWord} — ขับจริงประมาณ ×1.3–1.6 เท่า">📏 ระยะจาก${distWord}</span>
       <div class="fctrl fctrl-slider"><output class="fval" id="f-dist-v">${f.dist >= 10 ? "ทั้งหมด" : "≤ " + f.dist + " กม."}</output><input type="range" id="f-dist" min="3" max="10" step="0.5" value="${f.dist}" aria-label="ระยะจาก${distWord}สูงสุด"></div>
     </div>
     <div class="frow">
-      <span class="flabel" title="แสดงเฉพาะโรงที่มีโปรแกรมระดับนี้ขึ้นไป (โปรแกรมสูงสุดที่ ป.1 ใหม่เข้าได้)">🗣️ ระดับอังกฤษ</span>
+      <span class="flabel" title="แสดงเฉพาะโรงเรียนที่มีโปรแกรมระดับนี้ขึ้นไป (โปรแกรมสูงสุดที่ ป.1 ใหม่เข้าได้)">🗣️ ระดับอังกฤษ</span>
       <div class="fchips" id="f-level">
         <button data-lv="0" aria-pressed="${!f.minLevel}" class="${!f.minLevel ? "active" : ""}">ทุกระดับ</button>
         <button data-lv="2" aria-pressed="${f.minLevel === 2}" class="${f.minLevel === 2 ? "active" : ""}">เสริมอังกฤษ+</button>
@@ -525,14 +543,14 @@ function renderFilterBar() {
           <button data-zh="some" aria-pressed="${f.chinese === "some"}" class="${f.chinese === "some" ? "active" : ""}">มีจีนบ้าง</button>
           <button data-zh="intensive" aria-pressed="${f.chinese === "intensive"}" class="${f.chinese === "intensive" ? "active" : ""}">เข้มข้น (ตรีภาษา)</button>
         </div>
-        <label class="ftoggle" title="แสดงเฉพาะโรงที่สอนต่อถึงมัธยมปลายในที่เดียวกัน"><input type="checkbox" id="f-sec" ${f.secondary ? "checked" : ""}>มีมัธยมต่อ</label>
-        <label class="ftoggle" title="ซ่อนโรงที่ยังไม่มีตัวเลขราคา (ต้องโทรถามโรงเอง)"><input type="checkbox" id="f-hideunk" ${f.hideUnknown ? "checked" : ""}>ซ่อนโรงที่ไม่เปิดเผยราคา</label>
+        <label class="ftoggle" title="แสดงเฉพาะโรงเรียนที่สอนต่อถึงมัธยมปลายในที่เดียวกัน"><input type="checkbox" id="f-sec" ${f.secondary ? "checked" : ""}>มีมัธยมต่อ</label>
+        <label class="ftoggle" title="ซ่อนโรงเรียนที่ยังไม่มีตัวเลขราคา (ต้องโทรถามโรงเรียนเอง)"><input type="checkbox" id="f-hideunk" ${f.hideUnknown ? "checked" : ""}>ซ่อนโรงเรียนที่ไม่เปิดเผยราคา</label>
       </div>
     </div>`;
   patchResetBtn("#f-reset", countActiveFilters());
 
   $("#f-q").oninput = e => { f.q = e.target.value; patchResetBtn("#f-reset", countActiveFilters()); renderSchoolViews(); };
-  $("#f-budget").oninput = e => { f.budget = +e.target.value; $("#f-budget-v").textContent = f.budget >= 400000 ? "ทั้งหมด" : "≤ " + fmtBaht(f.budget); patchResetBtn("#f-reset", countActiveFilters()); renderSchoolViews(); };
+  wireBudgetNum("#f-budget-n", "#f-budget", "#f-budget-v", 37000, v => { f.budget = v; patchResetBtn("#f-reset", countActiveFilters()); renderSchoolViews(); });
   $("#f-dist").oninput = e => { f.dist = +e.target.value; $("#f-dist-v").textContent = f.dist >= 10 ? "ทั้งหมด" : "≤ " + f.dist + " กม."; patchResetBtn("#f-reset", countActiveFilters()); renderSchoolViews(); };
   $$("#f-level button").forEach(b => b.onclick = () => {
     f.minLevel = +b.dataset.lv;
@@ -578,7 +596,7 @@ function schoolCard(s) {
 }
 function renderSchools() {
   const list = applyFilters();
-  $("#school-count").textContent = `พบ ${list.length} จาก ${D.schools.length} โรง` + (list.length === 0 ? " — ลองคลายตัวกรอง" : "");
+  $("#school-count").textContent = `พบ ${list.length} จาก ${D.schools.length} โรงเรียน` + (list.length === 0 ? " — ลองคลายตัวกรอง" : "");
   $("#school-grid").innerHTML = list.map(schoolCard).join("");
 }
 /* มุมมองการ์ด/ตารางในแท็บโรงเรียน — ใช้ชุดตัวกรองเดียวกัน */
@@ -643,15 +661,15 @@ function renderCostFilterBar() {
     </div>
     <div class="frow">
       <span class="flabel">🔍 ค้นหา</span>
-      <div class="fctrl"><input type="text" id="cf-q" placeholder="ชื่อโรง / โปรแกรม…" value="${esc(f.q)}"></div>
+      <div class="fctrl"><input type="text" id="cf-q" placeholder="ชื่อโรงเรียน / โปรแกรม…" value="${esc(f.q)}"></div>
     </div>
     <div class="frow">
       <span class="flabel">💰 ราคาสูงสุด</span>
-      <div class="fctrl fctrl-slider"><output class="fval" id="cf-max-v">${f.max >= 400000 ? "ทั้งหมด" : "≤ " + fmtBaht(f.max)}</output><input type="range" id="cf-max" min="0" max="400000" step="1000" value="${f.max}" aria-label="ราคาสูงสุดต่อปี"></div>
+      <div class="fctrl fctrl-slider"><output class="fval" id="cf-max-v">${f.max >= 400000 ? "ทั้งหมด" : "≤ " + fmtBaht(f.max)}</output><input type="range" id="cf-max" min="0" max="400000" step="1000" value="${f.max}" aria-label="ราคาสูงสุดต่อปี"><input type="text" class="fnum" id="cf-max-n" inputmode="numeric" value="${f.max}" placeholder="บาท/ปี" title="พิมพ์ตัวเลขได้ เช่น 80000 หรือ 80k" aria-label="พิมพ์ราคาสูงสุดต่อปี (บาท)"></div>
     </div>`;
   patchResetBtn("#cf-reset", nActive());
   $("#cf-q").oninput = e => { f.q = e.target.value; patchResetBtn("#cf-reset", nActive()); renderCostChart(); };
-  $("#cf-max").oninput = e => { f.max = +e.target.value; $("#cf-max-v").textContent = f.max >= 400000 ? "ทั้งหมด" : "≤ " + fmtBaht(f.max); patchResetBtn("#cf-reset", nActive()); renderCostChart(); };
+  wireBudgetNum("#cf-max-n", "#cf-max", "#cf-max-v", 0, v => { f.max = v; patchResetBtn("#cf-reset", nActive()); renderCostChart(); });
   $("#cf-reset").onclick = () => { state.costFilters = { q: "", max: 400000 }; renderCostFilterBar(); renderCostChart(); };
 }
 function renderCostChart() {
@@ -694,7 +712,7 @@ function renderCostChart() {
         ${fyExtra ? `<div class="cost-fy" style="left:${(r.cost / maxVal * 100).toFixed(1)}%;width:${((fy - r.cost) / maxVal * 100).toFixed(1)}%" title="+${fmtBaht(fy - r.cost)} ที่จ่ายเพิ่มปีแรก"></div>` : ""}
         ${fy ? `<div class="cost-diamond" style="left:${(fy / maxVal * 100).toFixed(1)}%" title="ปีแรก ~${fmtBaht(fy)}"></div>` : ""}
       </div>
-      <div class="cost-val">${fmtBaht(r.cost)}${r.unc ? " (?)" : ""}${fy ? `<span class="fy">◆ ปีแรก ${fmtBaht(fy)}</span>` : ""}<span class="sub">${esc((r.s.cost_ref.match(/ป\.?\s?\d{3,4}|26-27|25[0-9]{2}/) || [r.unc ? "ต้องยืนยันโรง" : "ไม่ระบุปี"])[0])}</span></div>
+      <div class="cost-val">${fmtBaht(r.cost)}${r.unc ? " (?)" : ""}${fy ? `<span class="fy">◆ ปีแรก ${fmtBaht(fy)}</span>` : ""}<span class="sub">${esc((r.s.cost_ref.match(/ป\.?\s?\d{3,4}|26-27|25[0-9]{2}/) || [r.unc ? "ต้องยืนยันกับโรงเรียน" : "ไม่ระบุปี"])[0])}</span></div>
     </div>`;
   }).join("") : `<div class="footnote" style="padding:14px 2px">ไม่มีรายการที่ตรงตัวกรอง — ลองปรับราคาสูงสุด ล้างคำค้น หรือกด "ล้างตัวกรอง"</div>`;
   $$("#cost-chart .cost-track").forEach(t => t.onclick = () => openFeeModal(t.dataset.fee, t.dataset.feeProg));
@@ -752,7 +770,7 @@ function openFeeModal(slug, progName) {
     ["รวมอาหารกลางวัน?", foodText(s.includes_food)],
     ["อ้างอิงราคา", year],
   ];
-  const noSec = `<div class="fee-nosec"><b>ยังไม่มีตารางแยกรายการค่าใช้จ่ายของโรงนี้ใน wiki</b><br>
+  const noSec = `<div class="fee-nosec"><b>ยังไม่มีตารางแยกรายการค่าใช้จ่ายของโรงเรียนนี้ใน wiki</b><br>
     ${(s.cost_programs || []).length ? "ราคาตามโปรแกรม: " + esc(costProgramText(s)) + "<br>" : ""}
     <span class="footnote">${esc(s.cost_ref)}</span></div>`;
   $("#fee-modal").innerHTML = `
@@ -765,7 +783,7 @@ function openFeeModal(slug, progName) {
       <div class="qf-grid">${qf.map(([k, v]) => `<div class="qf"><b>${k}</b>${esc(String(v))}</div>`).join("")}</div>
       ${sec ? `<h3 class="fee-sec-title">🧾 รายการค่าใช้จ่ายแยกบรรทัด — ถอดจากหน้า wiki "Breakdown รายการค่าใช้จ่าย"</h3>
         <div class="md fee-md">${mdToHtml(sec.join("\n").trim())}</div>` : noSec}
-      <p class="footnote" style="margin:10px 0 12px">ตัวเลขอ้างอิงปีการศึกษาต่างกัน (2567–2570) — (?) = อ่านจากแหล่งไม่ชัด/ทุติยภูมิ ตามไฟล์ raw ของโรง</p>
+      <p class="footnote" style="margin:10px 0 12px">ตัวเลขอ้างอิงปีการศึกษาต่างกัน (2567–2570) — (?) = อ่านจากแหล่งไม่ชัด/ทุติยภูมิ ตามไฟล์ raw ของโรงเรียน</p>
     </div>
     <div class="fee-btns">
       <button class="btn btn-sm" id="fee-detail">🏫 รายละเอียดโรงเรียน</button>
@@ -889,7 +907,7 @@ function renderCalGroups() {
     const st = ADM_STATUS[g.code];
     const n = A.rows.filter(r => r.status === g.code).length;
     return `<button class="cal-group ${state.calFilter === g.code ? "active" : ""}" style="--gc:${st.color};--gb:${st.soft};--gi:${st.ink}" data-gfilter="${g.code}">
-      <div class="cal-group-head">${st.icon} <b>${esc(g.title)}</b> <span class="count">${n} โรง</span></div>
+      <div class="cal-group-head">${st.icon} <b>${esc(g.title)}</b> <span class="count">${n} โรงเรียน</span></div>
       <div class="cal-group-urg">${inline(esc(g.urgency))}</div>
     </button>`;
   }).join("");
@@ -921,7 +939,7 @@ function renderCalChart() {
   const evTip = ev => {
     let t = ev.label + (ev.uncertain ? " (?)" : "");
     if (ev.start) t += ` · ${thDate(ev.start)}${ev.kind === "from" ? " เป็นต้นไป" : ev.end ? " – " + thDate(ev.end) : ""}`;
-    if (ev.expected) t += " · คาดการณ์ ไม่ใช่ประกาศโรง";
+    if (ev.expected) t += " · คาดการณ์ ไม่ใช่ประกาศโรงเรียน";
     return t;
   };
   const pill = (ev, x1, x2, lane, slug, st) => {
@@ -969,7 +987,7 @@ function renderCalChart() {
   const grid = months.map((mm, i) => `<i class="cal-grid" style="left:${i * CAL_W}px"></i>`).join("");
 
   $("#cal-chart").innerHTML =
-    `<div class="cal-hrow"><div class="cal-corner">โรง (ระยะจาก${distWord}) / เดือน</div><div class="cal-months">` +
+    `<div class="cal-hrow"><div class="cal-corner">โรงเรียน (ระยะจาก${distWord}) / เดือน</div><div class="cal-months">` +
     months.map(mm => `<span class="cal-month${mm.m === 1 ? " yr" : ""}">${TH_M[mm.m - 1]} ${String(mm.y + 543).slice(-2)}</span>`).join("") +
     `</div></div>
      <div class="cal-body">${grid}${msStrip}${A.rows.map(rowHtml).join("")}
@@ -994,7 +1012,7 @@ function renderCalCards() {
     const g = A.groups.find(x => x.code === code);
     const dim = state.calFilter && state.calFilter !== code ? " cal-dim" : "";
     return `<div class="cal-card-group${dim}">
-      <h3 style="border-bottom-color:${st.color}">${st.icon} ${esc(g ? g.title : st.label)} <span class="footnote">${rows.length} โรง</span></h3>
+      <h3 style="border-bottom-color:${st.color}">${st.icon} ${esc(g ? g.title : st.label)} <span class="footnote">${rows.length} โรงเรียน</span></h3>
       <div class="cal-cards-grid">` +
       rows.map(r => {
         const s = bySlug(r.slug) || {};
@@ -1018,7 +1036,7 @@ function renderCalCards() {
 function renderCompare() {
   const list = state.compare.map(bySlug).filter(Boolean);
   if (!list.length) {
-    $("#compare-area").innerHTML = `<div class="panel compare-hint">ยังไม่ได้เลือกโรงเทียบ<br><span class="footnote">ไปที่แท็บ "โรงเรียน" แล้วกดปุ่ม "＋ เทียบ" หรือติ๊กคอลัมน์เทียบในตาราง (เลือกได้ 2–4 โรง)</span></div>`;
+    $("#compare-area").innerHTML = `<div class="panel compare-hint">ยังไม่ได้เลือกโรงเรียนเทียบ<br><span class="footnote">ไปที่แท็บ "โรงเรียน" แล้วกดปุ่ม "＋ เทียบ" หรือติ๊กคอลัมน์เทียบในตาราง (เลือกได้ 2–4 โรงเรียน)</span></div>`;
     return;
   }
   const minCost = Math.min(...list.map(costOf).filter(c => c != null));
@@ -1070,7 +1088,7 @@ const AXES = [
     score: s => ({ intensive: 5, some: 3, none: 1 })[s.chinese] ?? null,
     raw: s => ZH[s.chinese] },
   { icon: "💸", label: "ค่าใช้จ่าย",
-    desc: "ค่าเล่าเรียน/ปี โรงหลายโปรแกรมใช้ราคาต่ำสุด — ≤฿60K = 5 · ≥฿350K = 1 · ⚠️ ปีอ้างอิงต่างกัน (2567–2570) ดูปีในตาราง",
+    desc: "ค่าเล่าเรียน/ปี โรงเรียนหลายโปรแกรมใช้ราคาต่ำสุด — ≤฿60K = 5 · ≥฿350K = 1 · ⚠️ ปีอ้างอิงต่างกัน (2567–2570) ดูปีในตาราง",
     score: s => costOf(s) == null ? null : lin(60000, 350000, costOf(s)),
     raw: s => { const c = costOf(s); return c == null ? '<span class="miss">ไม่เปิดเผย</span>'
       : `${s.cost != null ? fmtBaht(s.cost) : costRangeText(s)} <span class="sub">${costYear(s) || "ไม่ระบุปี"}</span>`; } },
@@ -1079,7 +1097,7 @@ const AXES = [
     score: s => s.secondary ? 5 : 1,
     raw: s => s.secondary ? "ถึง ม.6" : "จบ ป.6" },
   { icon: "🔍", label: "ข้อมูลโปร่งใส",
-    desc: "เปิดเผยราคา (2) + ขนาดห้อง (1.5) + เวลาเรียน (1.5) — คะแนนต่ำ = ข้อมูลต้องโทรถามโรงเอง",
+    desc: "เปิดเผยราคา (2) + ขนาดห้อง (1.5) + เวลาเรียน (1.5) — คะแนนต่ำ = ข้อมูลต้องโทรถามโรงเรียนเอง",
     score: s => infoScore(s),
     raw: s => `ราคา${costOf(s) != null ? "✓" : "✗"} ห้อง${hasInfo(s.class_size) ? "✓" : "✗"} เวลา${hasInfo(s.school_hours) ? "✓" : "✗"}` },
 ];
@@ -1135,9 +1153,9 @@ function schoolCallouts(s) {
   else if (c >= 300000) note.push(`ราคาสูง ${fmtK(c)}/ปี`);
   if (s.chinese === "intensive") hi.push("จีนเข้มข้น (ตรีภาษา)");
   if (s.secondary) hi.push("เรียนต่อถึง ม.6");
-  else note.push("จบที่ ป.6 ต้องหาโรงต่อ ม.1");
+  else note.push("จบที่ ป.6 ต้องหาโรงเรียนต่อ ม.1");
   const t = infoScore(s);
-  if (t <= 1.5) note.push("ข้อมูลเปิดเผยน้อย — ต้องถามโรง");
+  if (t <= 1.5) note.push("ข้อมูลเปิดเผยน้อย — ต้องถามโรงเรียน");
   else if (t >= 4.5) hi.push("เปิดเผยข้อมูลครบ");
   return { hi: hi.slice(0, 3), note: note.slice(0, 3) };
 }
@@ -1167,14 +1185,14 @@ function renderRadar() {
 
   // ฝั่งซ้าย: รายการติ๊กเลือกโรงขึ้นกราฟ — เรียงตามระยะ กล่องสี = ลำดับ/สีเส้นบนกราฟ
   $("#radar-pick").innerHTML =
-    `<div class="radar-pick-head"><b>โรงที่แสดงบนกราฟ</b><span class="rp-count">${state.radar.length}/4</span>
+    `<div class="radar-pick-head"><b>โรงเรียนที่แสดงบนกราฟ</b><span class="rp-count">${state.radar.length}/4</span>
        <button class="btn btn-ghost btn-sm" id="radar-clear" ${state.radar.length ? "" : "hidden"}>ล้าง</button></div>
      <p class="rp-hint">เลือกได้ 2–4 โปรแกรม · เลขในกล่อง = สีเส้นบนกราฟ</p>
      <div class="radar-pick-list">` +
     D.schools.map(s => {
       const idx = state.radar.indexOf(s.slug);
       const on = idx >= 0;
-      return `<button class="radar-pick-row ${on ? "sel" : ""} ${!on && full ? "full" : ""}" data-radar="${s.slug}" ${!on && full ? 'title="เต็ม 4 โรงแล้ว — ลบออกหนึ่งก่อน"' : ""}>
+      return `<button class="radar-pick-row ${on ? "sel" : ""} ${!on && full ? "full" : ""}" data-radar="${s.slug}" ${!on && full ? 'title="เต็ม 4 โปรแกรมแล้ว — ลบออกหนึ่งก่อน"' : ""}>
         <span class="rp-box" style="${on ? `background:${RC[idx % RC.length]};border-color:${RC[idx % RC.length]}` : ""}">${on ? idx + 1 : ""}</span>
         <span class="rp-txt"><span class="rp-name">${s.short}</span><span class="rp-sub">${s.distance_km} กม. · ${s.cost != null ? fmtK(s.cost) : costRangeText(s) || "ราคา?"} · ${lvText(s)}</span></span>
       </button>`;
@@ -1186,7 +1204,7 @@ function renderRadar() {
   };
 
   $("#radar-chart").innerHTML = sel.length ? radarSvg(sel, 540, { labels: true, dots: true })
-    : `<div class="radar-empty">ยังไม่ได้เลือกโรง — ติ๊กจากรายการด้านซ้าย (ได้ 2–4 โปรแกรม)</div>`;
+    : `<div class="radar-empty">ยังไม่ได้เลือกโรงเรียน — ติ๊กจากรายการด้านซ้าย (ได้ 2–4 โปรแกรม)</div>`;
 
   // ฝั่งขวา: ชิปโรงที่เลือก (ลบออกได้) + จุดเด่น/จุดสังเกตอัตโนมัติ + เกณฑ์ให้คะแนน
   $("#radar-side").innerHTML =
@@ -1202,7 +1220,7 @@ function renderRadar() {
       }).join("") : "") +
     `<details class="radar-rubric" open><summary>เกณฑ์ให้คะแนนทั้ง 6 แกน (normalize จากข้อมูล wiki)</summary>
       <ul>${AXES.map(ax => `<li><b>${ax.icon} ${ax.label}</b> — ${ax.desc}</li>`).join("")}</ul>
-      <p class="footnote">คะแนนเป็นการวาดรูปทรงข้อมูล ไม่ใช่คะแนนรวมหรือการตัดสินโรง · น้ำหนักความสำคัญแต่ละแกนเป็นของผู้ปกครอง (ยังไม่ได้กำหนดใน criteria.md)</p>
+      <p class="footnote">คะแนนเป็นการวาดรูปทรงข้อมูล ไม่ใช่คะแนนรวมหรือการตัดสินโรงเรียน · น้ำหนักความสำคัญแต่ละแกนเป็นของผู้ปกครอง (ยังไม่ได้กำหนดใน criteria.md)</p>
     </details>`;
 
   // ตารางค่าจริงตามแกน (เขียว = สูงสุดในกลุ่มที่เลือก)
@@ -1218,7 +1236,7 @@ function renderRadar() {
   } else $("#radar-values").innerHTML = "";
 
   // สรุป "สิ่งที่โดดเด่น" / "ข้อควรระวัง" จากหน้า wiki ของโรงที่เลือก
-  $("#radar-wiki").innerHTML = sel.length ? `<h3 class="radar-vt" style="margin-top:0">📝 สรุปจากหน้า wiki — "สิ่งที่โดดเด่น" / "ข้อควรระวัง / ช่องว่างข้อมูล" <span class="sec-hint">กดเพื่อกางอ่านทีละโรง</span></h3>` +
+  $("#radar-wiki").innerHTML = sel.length ? `<h3 class="radar-vt" style="margin-top:0">📝 สรุปจากหน้า wiki — "สิ่งที่โดดเด่น" / "ข้อควรระวัง / ช่องว่างข้อมูล" <span class="sec-hint">กดเพื่อกางอ่านทีละโรงเรียน</span></h3>` +
     sel.map((s, i) => {
       const pros = wikiBullets(s, /^##\s*สิ่งที่โดดเด่น/), cons = wikiBullets(s, /^##\s*ข้อควรระวัง/);
       return `<details class="radar-wiki-block" style="--cc:${RC[i % RC.length]}">
@@ -1369,7 +1387,7 @@ function openBrochures() {
     </div>
     <div class="fee-body">
       ${groups.map(([k, files]) => `
-        <h3 class="brochure-group">${k && bySlug(k) ? `${esc(bySlug(k).name)} <span class="footnote">${k}</span>` : "อื่น ๆ (จับคู่โรงไม่ได้)"} <span class="footnote">${files.length} ไฟล์</span></h3>
+        <h3 class="brochure-group">${k && bySlug(k) ? `${esc(bySlug(k).name)} <span class="footnote">${k}</span>` : "อื่น ๆ (จับคู่โรงเรียนไม่ได้)"} <span class="footnote">${files.length} ไฟล์</span></h3>
         <div class="brochure-grid">${files.map(card).join("")}</div>`).join("")}
       <p class="footnote" style="margin:12px 0 4px">thumbnail เป็นรูปย่อที่ build สร้าง — กด 🔍 ดู หรือ ⬇️ โหลด ได้ไฟล์ต้นฉบับเต็มขนาด · ปุ่ม "ทั้งหมด (.zip)" ใช้ได้เมื่อเปิดเว็บผ่าน http server — เปิดจากไฟล์ตรง ๆ (file://) browser จะบล็อกการอ่านไฟล์ ให้กดโหลดทีละไฟล์แทน</p>
     </div>
@@ -1461,7 +1479,7 @@ function closeDetail() { $("#drawer").hidden = true; $("#drawer-scrim").hidden =
 function toggleCompare(slug) {
   const i = state.compare.indexOf(slug);
   if (i >= 0) state.compare.splice(i, 1);
-  else if (state.compare.length >= 4) { alert("เทียบได้สูงสุด 4 โรง"); return; }
+  else if (state.compare.length >= 4) { alert("เทียบได้สูงสุด 4 โรงเรียน"); return; }
   else state.compare.push(slug);
   localStorage.setItem(SK + "compare", JSON.stringify(state.compare));
   renderTray(); renderTabs();
@@ -1551,8 +1569,8 @@ try { // จุดตั้งต้นที่เคยเลือกไว�
 // ข้อความส่วนที่ต่างกันตามเวอร์ชัน (index.html เก็บโครงสร้างไว้ ให้ JS เติม)
 $("#home-emoji").textContent = distIcon;
 $("#home-hint").innerHTML = SHARE
-  ? "ลากหมุดเพื่อย้ายจุดตั้งต้น (เช่น บ้านของคุณ) · ระยะในแท็บนี้ = <b>เส้นทางขับรถ</b> · <b>*</b> = ระยะตรง · กดโรงเพื่อลากเส้นทาง"
-  : "ลากหมุด 🏠 เพื่อย้ายจุดตั้งต้น (ลองจากที่ทำงาน/บ้านปู่ย่า) · ระยะในแท็บนี้ = <b>เส้นทางขับรถ</b> · <b>*</b> = ระยะตรง · กดโรงเพื่อลากเส้นทาง";
+  ? "ลากหมุดเพื่อย้ายจุดตั้งต้น (เช่น บ้านของคุณ) · ระยะในแท็บนี้ = <b>เส้นทางขับรถ</b> · <b>*</b> = ระยะตรง · กดโรงเรียนเพื่อลากเส้นทาง"
+  : "ลากหมุด 🏠 เพื่อย้ายจุดตั้งต้น (ลองจากที่ทำงาน/บ้านปู่ย่า) · ระยะในแท็บนี้ = <b>เส้นทางขับรถ</b> · <b>*</b> = ระยะตรง · กดโรงเรียนเพื่อลากเส้นทาง";
 $("#home-pick").textContent = SHARE ? "📍 เลือกจุดตั้งต้นใหม่" : "📍 เลือกจุด Home ใหม่";
 $("#map-note").innerHTML = "🚗 เส้นทาง/เวลาคำนวณจาก OSRM (OpenStreetMap) — เส้นทางสั้นที่สุดตามถนน ไม่รวมรถติด · ย้ายจุดตั้งต้นแล้วเว็บดึงเส้นทางใหม่สด (ต้องออนไลน์) · วงรัศมี 3/5/10 กม. เป็นระยะตรง"
   + (SHARE ? "" : " และระยะ TDP/OB เป็นระยะตรง");
