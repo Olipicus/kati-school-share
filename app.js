@@ -14,10 +14,10 @@ const distIcon = SHARE ? "🏫" : "🏠";              // ไอคอนจุ�
 /* ---------- constants ---------- */
 const LEVELS = {
   1: { name: "สามัญ", short: "สามัญ", color: "#94a3b8", desc: "หลักสูตรไทยล้วน อังกฤษเป็นวิชาภาษา" },
-  2: { name: "สามัญ + เสริมอังกฤษ", short: "เสริมอังกฤษ", color: "#0ea5e9", desc: "ครูต่างชาติ 5-10 คาบ/สัปดาห์" },
-  3: { name: "English Program แบบไทย", short: "EP", color: "#14b8a6", desc: "วิชาหลักบางวิชาสอนเป็นอังกฤษ" },
-  4: { name: "สองภาษาเข้มข้น / หลักสูตรผสม", short: "สองภาษา", color: "#8b5cf6", desc: "อังกฤษ ~50%+ (Oxford/Cambridge/ตรีภาษา)" },
-  5: { name: "นานาชาติเต็มรูปแบบ", short: "นานาชาติ", color: "#f43f5e", desc: "อังกฤษ 90-95%+" },
+  2: { name: "สามัญ + เสริมอังกฤษ", short: "เสริมอังกฤษ", color: "#0092f9", desc: "ครูต่างชาติ 5-10 คาบ/สัปดาห์" },
+  3: { name: "English Program แบบไทย", short: "EP", color: "#01a88f", desc: "วิชาหลักบางวิชาสอนเป็นอังกฤษ" },
+  4: { name: "สองภาษาเข้มข้น / หลักสูตรผสม", short: "สองภาษา", color: "#014f95", desc: "อังกฤษ ~50%+ (Oxford/Cambridge/ตรีภาษา)" },
+  5: { name: "นานาชาติเต็มรูปแบบ", short: "นานาชาติ", color: "#fd5b65", desc: "อังกฤษ 90-95%+" },
 };
 const ZH = { intensive: "จีนเข้มข้น", some: "มีจีน", none: "ไม่มีจีน", unknown: "จีน: ไม่รู้" };
 const DOC_ORDER = ["overview", "criteria", "program-types", "school-groups", "cost", "cost-breakdown", "programs", "activities", "contacts", "admission-calendar"];
@@ -95,10 +95,10 @@ const driveTip = s => { const r = rOf(s); if (r && !r.pending) return `🚗 ${r.
 
 function costColor(c) {
   if (c == null) return "#94a3b8";
-  if (c <= 60000) return "#22c55e";
-  if (c <= 120000) return "#eab308";
-  if (c <= 200000) return "#f97316";
-  return "#ef4444";
+  if (c <= 60000) return "#46b151";
+  if (c <= 120000) return "#facc15";
+  if (c <= 200000) return "#fda102";
+  return "#fd4c3d";
 }
 
 /* ---------- markdown (subset ที่ wiki ใช้จริง) ---------- */
@@ -283,7 +283,7 @@ function initMap() {
 }
 function colorOf(s) {
   if (state.mapColor === "cost") return costColor(costOf(s));
-  if (state.mapColor === "chinese") return s.chinese === "intensive" ? "#f59e0b" : s.chinese === "some" ? "#fcd34d" : "#d1d5db";
+  if (state.mapColor === "chinese") return s.chinese === "intensive" ? "#fda102" : s.chinese === "some" ? "#fcd34d" : "#d1d5db";
   return lvColor(s);
 }
 function refreshColors() {
@@ -296,7 +296,7 @@ function renderRings() {
   const o = homePos();
   [3, 5, 10].forEach(km => {
     const c = L.circle([o.lat, o.lon], {
-      radius: km * 1000, color: "#6366f1", weight: 1, dashArray: "5 6", fill: false, opacity: .5,
+      radius: km * 1000, color: "#0092f9", weight: 1, dashArray: "5 6", fill: false, opacity: .5,
     }).addTo(map).bindTooltip(km + " กม.", { permanent: true, className: "ring-tip" });
     rings.push(c);
   });
@@ -442,7 +442,7 @@ function selectSchool(s, fly = true) {
   const o = homePos(), r = rOf(s);
   if (!drawRouteLine(s, fly)) {
     // ยังไม่มี geometry — วาดเส้นตรง (ประ) ไปก่อน แล้วดึงเส้นทางขับจริงมาแทนเมื่อได้
-    selLine = L.polyline([[o.lat, o.lon], [s.lat, s.lon]], { color: "#4f46e5", weight: 2.5, dashArray: "7 7", opacity: .8 }).addTo(map);
+    selLine = L.polyline([[o.lat, o.lon], [s.lat, s.lon]], { color: "#014f95", weight: 2.5, dashArray: "7 7", opacity: .8 }).addTo(map);
     if (fly) map.fitBounds(L.latLngBounds([[o.lat, o.lon], [s.lat, s.lon]]).pad(0.35));
     if (r && !r.pending) {
       routeGeometry(o, s).then(route => {
@@ -460,12 +460,12 @@ function drawRouteLine(s, fly) {
   const o = homePos(), r = rOf(s);
   if (!r || !r.coords) return false;
   // เส้นทางขับรถจริงตามถนน (OSRM) — เส้นทึบ + จุดปลายทาง
-  const line = L.polyline(r.coords, { color: "#4f46e5", weight: 4.5, opacity: .9 })
+  const line = L.polyline(r.coords, { color: "#014f95", weight: 4.5, opacity: .9 })
     .bindTooltip(`🚗 ${r.km} กม. · ≈${r.min} นาที (ไม่รวมรถติด)`, { sticky: true });
   selLine = L.layerGroup([
     line,
-    L.circleMarker([o.lat, o.lon], { radius: 4, color: "#fff", weight: 2, fillColor: "#4f46e5", fillOpacity: 1 }),
-    L.circleMarker([s.lat, s.lon], { radius: 4, color: "#fff", weight: 2, fillColor: "#4f46e5", fillOpacity: 1 }),
+    L.circleMarker([o.lat, o.lon], { radius: 4, color: "#fff", weight: 2, fillColor: "#014f95", fillOpacity: 1 }),
+    L.circleMarker([s.lat, s.lon], { radius: 4, color: "#fff", weight: 2, fillColor: "#014f95", fillOpacity: 1 }),
   ]).addTo(map);
   if (fly) map.fitBounds(L.latLngBounds(r.coords).pad(0.15));
   return true;
@@ -629,7 +629,7 @@ const COLS = [
   { key: "class_size", label: "คน/ห้อง", fmt: s => esc(String(s.class_size || "—")) },
   { key: "school_hours", label: "เวลาเรียน", fmt: s => esc(String(s.school_hours || "ไม่พบ")) },
   { key: "secondary", label: "มัธยมต่อ", fmt: s => s.secondary ? "✅" : "—" },
-  { key: "cmp", label: "เทียบ", fmt: s => `<input type="checkbox" data-cmpchk="${s.slug}" ${state.compare.includes(s.slug) ? "checked" : ""} style="accent-color:#4f46e5;width:16px;height:16px">` },
+  { key: "cmp", label: "เทียบ", fmt: s => `<input type="checkbox" data-cmpchk="${s.slug}" ${state.compare.includes(s.slug) ? "checked" : ""} style="accent-color:#0092f9;width:16px;height:16px">` },
 ];
 function sortVal(s, key) {
   if (key === "lv") return lvMax(s);
@@ -886,9 +886,9 @@ function closeRaw() {
 
 /* ---------- ปฏิทินรับสมัคร (Gantt จาก wiki/comparisons/admission-calendar.md) ---------- */
 const ADM_STATUS = {
-  open:    { label: "เปิดรับแล้ว", icon: "🟢", color: "#16a34a", soft: "#dcfce7", ink: "#166534" },
-  rolling: { label: "รับตลอด/ไม่มีรอบ", icon: "🔵", color: "#0284c7", soft: "#e0f2fe", ink: "#075985" },
-  early:   { label: "ยื่นล่วงหน้าได้", icon: "🟡", color: "#d97706", soft: "#fef3c7", ink: "#92400e" },
+  open:    { label: "เปิดรับแล้ว", icon: "🟢", color: "#2fa14b", soft: "#e7f6ea", ink: "#1d6f31" },
+  rolling: { label: "รับตลอด/ไม่มีรอบ", icon: "🔵", color: "#0284d2", soft: "#e3f2fe", ink: "#015f9e" },
+  early:   { label: "ยื่นล่วงหน้าได้", icon: "🟡", color: "#e08900", soft: "#fef3df", ink: "#8f5300" },
   none:    { label: "ยังไม่มีประกาศ", icon: "⚪", color: "#94a3b8", soft: "#f1f5f9", ink: "#475569" },
 };
 const TH_M = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
@@ -1002,7 +1002,7 @@ function renderCalChart() {
        <div class="cal-lines">${vLines}</div>
      </div>`;
   $("#cal-legend").innerHTML = [
-    `<span class="lg"><i class="sw" style="background:#0284c7"></i>แถบสี = กำหนดการจากโรงเรียน</span>`,
+    `<span class="lg"><i class="sw" style="background:#0284d2"></i>แถบสี = กำหนดการจากโรงเรียน</span>`,
     `<span class="lg"><i class="sw is-expected"></i>ลาย = คาดการณ์ (pattern ปีก่อน)</span>`,
     `<span class="lg"><i class="sw is-uncertain"></i>ขอบประ + (?) = ยังไม่ยืนยัน</span>`,
     `<span class="lg">→ จาง = "เป็นต้นไป" · แถบจางมาก = ผ่านไปแล้ว</span>`,
@@ -1074,7 +1074,7 @@ function renderCompare() {
 }
 
 /* ---------- radar จุดเด่น–จุดสังเกต ---------- */
-const RC = ["#4f46e5", "#f43f5e", "#0d9488", "#f59e0b"]; // สีของโรงบนกราฟตามลำดับที่เลือก
+const RC = ["#0092f9", "#fd5b65", "#01a88f", "#fda102"]; // สีของโรงบนกราฟตามลำดับที่เลือก — 4 สีหลักจากโลโก้
 const hasInfo = v => v != null && !/^ไม่(ชัด|พบ|ระบุ|ทราบ)/.test(String(v).trim()); // มีค่าและไม่ใช่ "ไม่ชัด/ไม่พบ…"
 const lin = (lo, hi, v) => Math.max(1, Math.min(5, 5 - (v - lo) * 4 / (hi - lo))); // ค่าจริง → 1–5 (น้อยกว่า = กว้างกว่า)
 const infoScore = s => (costOf(s) != null ? 2 : 0) + (hasInfo(s.class_size) ? 1.5 : 0) + (hasInfo(s.school_hours) ? 1.5 : 0);
@@ -1388,7 +1388,7 @@ function openBrochures() {
     </div>`;
   };
   el.innerHTML = `
-    <div class="fee-head" style="background:linear-gradient(120deg,#4f46e5,#7c3aed)">
+    <div class="fee-head" style="background:linear-gradient(120deg,#0166c4,#0092f9)">
       <button class="drawer-close" id="brochure-x" title="ปิด">✕</button>
       <h2>🖼️ โบรชัวร์/เอกสารโรงเรียน — ${list.length} ไฟล์</h2>
       <div class="sub">ภาพประกาศที่ดาวน์โหลดจากเว็บโรงเรียน (raw/downloads/) + เอกสารสแกนที่ได้จากโรงเรียน (raw/Scan Docs/) — source of truth · เรียงกลุ่มตามระยะจาก${distWord}</div>
