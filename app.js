@@ -201,7 +201,7 @@ function renderOverview() {
     [nSchools + " โรงเรียน · " + D.schools.length + " โปรแกรม", "ในลิสต์ รัศมี ~10 กม. รอบ" + distWord + (SHARE ? " (อนุบาลบ้านสนุกคิด)" : "") + " — โรงเรียนที่มีหลายแผนการเรียน (สามัญ/EP/IEP) แยกนับเป็นโปรแกรม"],
     [Math.min(...D.schools.map(s => s.distance_km)) + "–" + Math.max(...D.schools.map(s => s.distance_km)) + " กม.", "ระยะตรงจาก" + distWord + " (ขับจริง ×1.3–1.6)"],
     ["฿" + Math.min(...costs).toLocaleString() + "–" + Math.max(...costs).toLocaleString(), "ค่าเล่าเรียน/ปี (" + withCost.length + "/" + D.schools.length + " โปรแกรมเปิดเผยราคา)"],
-    [new Set(D.schools.filter(s => s.secondary).map(s => s.school_base)).size + " โรงเรียน", "สอนต่อถึงมัธยมในที่เดียวกัน"],
+    [new Set(D.schools.filter(s => s.secondary).map(s => s.school_base)).size + " โรงเรียน", "มีเส้นทางเรียนต่อมัธยมในระบบเดียวกัน — สูงสุดต่างกัน (ม.3 ถึง ม.6/G.12)"],
   ];
   $("#stat-grid").innerHTML = stats.map(([b, s]) => `<div class="stat"><b>${b}</b><span>${s}</span></div>`).join("");
 
@@ -551,7 +551,7 @@ function renderFilterBar() {
           <button data-zh="some" aria-pressed="${f.chinese === "some"}" class="${f.chinese === "some" ? "active" : ""}">มีจีนบ้าง</button>
           <button data-zh="intensive" aria-pressed="${f.chinese === "intensive"}" class="${f.chinese === "intensive" ? "active" : ""}">เข้มข้น (ตรีภาษา)</button>
         </div>
-        <label class="ftoggle" title="แสดงเฉพาะโรงเรียนที่สอนต่อถึงมัธยมปลายในที่เดียวกัน"><input type="checkbox" id="f-sec" ${f.secondary ? "checked" : ""}>มีมัธยมต่อ</label>
+        <label class="ftoggle" title="แสดงเฉพาะโรงเรียนที่มีเส้นทางเรียนต่อมัธยม — ระดับสูงสุดต่างกัน (ม.3 ถึง ม.6/G.12 ดูชิป/คอลัมน์ มัธยมต่อ)"><input type="checkbox" id="f-sec" ${f.secondary ? "checked" : ""}>มีมัธยมต่อ</label>
         <label class="ftoggle" title="ซ่อนโรงเรียนที่ยังไม่มีตัวเลขราคา (ต้องโทรถามโรงเรียนเอง)"><input type="checkbox" id="f-hideunk" ${f.hideUnknown ? "checked" : ""}>ซ่อนโรงเรียนที่ไม่เปิดเผยราคา</label>
       </div>
     </div>`;
@@ -585,7 +585,7 @@ function schoolCard(s) {
     <div class="chips">
       <span class="chip lv" style="background:${lvColor(s)}" title="${(LEVELS[lvMax(s)] || {}).desc || ""}">${lvText(s)}</span>
       ${s.chinese !== "none" ? `<span class="chip zh ${s.chinese === "intensive" ? "zh-intensive" : ""}">${ZH[s.chinese]}</span>` : ""}
-      ${s.secondary ? `<span class="chip sec">มีมัธยมต่อ</span>` : ""}
+      ${s.secondary ? `<span class="chip sec">มัธยมต่อ${s.secondary_to ? " ถึง " + esc(s.secondary_to) : ""}</span>` : ""}
       ${(s.programs || []).map(p => `<span class="chip">${esc(p)}</span>`).join("")}
     </div>
     <div class="card-cost">${s.cost != null ? `<b>${fmtBaht(s.cost)}</b>/ปี` : costRangeText(s) ? `<b>${costRangeText(s)}</b>/ปี <span class="footnote">ต่างตามโปรแกรม</span>` : "<b>ไม่เปิดเผย</b>"} ${s.first_year_est ? `<span class="footnote">· ปีแรก ~${fmtBaht(s.first_year_est)}</span>` : ""}
@@ -628,7 +628,7 @@ const COLS = [
   { key: "includes_food", label: "อาหาร", fmt: s => s.includes_food === "yes" ? "✅" : s.includes_food === "no" ? "❌" : "❓" },
   { key: "class_size", label: "คน/ห้อง", fmt: s => esc(String(s.class_size || "—")) },
   { key: "school_hours", label: "เวลาเรียน", fmt: s => esc(String(s.school_hours || "ไม่พบ")) },
-  { key: "secondary", label: "มัธยมต่อ", fmt: s => s.secondary ? "✅" : "—" },
+  { key: "secondary", label: "มัธยมต่อ", fmt: s => s.secondary ? esc(s.secondary_to || "มี") : "—" },
   { key: "cmp", label: "เทียบ", fmt: s => `<input type="checkbox" data-cmpchk="${s.slug}" ${state.compare.includes(s.slug) ? "checked" : ""} style="accent-color:#0092f9;width:16px;height:16px">` },
 ];
 function sortVal(s, key) {
@@ -1063,7 +1063,7 @@ function renderCompare() {
     ["รายละเอียดสิ่งที่รวม", s => `<span class="footnote">${esc(s.cost_includes)}</span>`],
     ["ขนาดห้อง", s => esc(String(s.class_size || "ไม่พบ"))],
     ["เวลาเรียน", s => esc(String(s.school_hours || "ไม่พบ"))],
-    ["มัธยมต่อ", s => s.secondary ? "✅ มี" : "— จบที่ ป.6"],
+    ["มัธยมต่อ", s => s.secondary ? (s.secondary_to ? "✅ ถึง " + s.secondary_to : "✅ มี") : "— จบที่ ป.6"],
     ["ประเภท/เครือ", s => esc(s.type)],
   ];
   $("#compare-area").innerHTML = `<div class="panel"><div class="compare-table-wrap"><table class="cmp-table">
@@ -1101,9 +1101,9 @@ const AXES = [
     raw: s => { const c = costOf(s); return c == null ? '<span class="miss">ไม่เปิดเผย</span>'
       : `${s.cost != null ? fmtBaht(s.cost) : costRangeText(s)} <span class="sub">${costYear(s) || "ไม่ระบุปี"}</span>`; } },
   { icon: "🎓", label: "มัธยมต่อ",
-    desc: "สอนต่อถึง ม.6 ในที่เดียวกัน = 5 · จบที่ ป.6 = 1",
-    score: s => s.secondary ? 5 : 1,
-    raw: s => s.secondary ? "ถึง ม.6" : "จบ ป.6" },
+    desc: "สอนต่อถึง ม.6/G.12 ในระบบเดียวกัน = 5 · ถึงแค่ ม.3 = 3 · จบที่ ป.6 = 1",
+    score: s => !s.secondary ? 1 : (s.secondary_to === "ม.3" ? 3 : 5),
+    raw: s => s.secondary ? (s.secondary_to ? "ถึง " + s.secondary_to : "มีต่อ") : "จบ ป.6" },
   { icon: "🔍", label: "ข้อมูลโปร่งใส",
     desc: "เปิดเผยราคา (2) + ขนาดห้อง (1.5) + เวลาเรียน (1.5) — คะแนนต่ำ = ข้อมูลต้องโทรถามโรงเรียนเอง",
     score: s => infoScore(s),
@@ -1160,7 +1160,7 @@ function schoolCallouts(s) {
   else if (c <= 60000) hi.push(`ค่าใช้จ่าย ~${fmtK(c)}/ปี`);
   else if (c >= 300000) note.push(`ราคาสูง ${fmtK(c)}/ปี`);
   if (s.chinese === "intensive") hi.push("จีนเข้มข้น (ตรีภาษา)");
-  if (s.secondary) hi.push("เรียนต่อถึง ม.6");
+  if (s.secondary) hi.push(s.secondary_to ? "เรียนต่อถึง " + s.secondary_to : "มีมัธยมต่อ");
   else note.push("จบที่ ป.6 ต้องหาโรงเรียนต่อ ม.1");
   const t = infoScore(s);
   if (t <= 1.5) note.push("ข้อมูลเปิดเผยน้อย — ต้องถามโรงเรียน");
@@ -1467,7 +1467,7 @@ function openDetail(slug) {
     ["ภาษาที่ 3", s.third_language],
     ["ขนาดห้อง", s.class_size || "ไม่พบ"],
     ["เวลาเรียน", s.school_hours || "ไม่พบ"],
-    ["มัธยมต่อ", s.secondary ? "✅ สอนต่อในที่เดียวกัน" : "ไม่มี (จบที่ ป.6)"],
+    ["มัธยมต่อ", s.secondary ? "✅ สอนต่อในที่เดียวกัน" + (s.secondary_to ? " (ถึง " + s.secondary_to + ")" : "") : "ไม่มี (จบที่ ป.6)"],
     ["อัปเดตข้อมูล", s.updated],
   ];
   const inCmp = state.compare.includes(s.slug);
