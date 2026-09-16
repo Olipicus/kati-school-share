@@ -68,6 +68,15 @@ const lvMax = s => s.english_level[1] || 0;
 const lvMin = s => s.english_level[0] || 0;
 const lvColor = s => (LEVELS[lvMax(s)] || LEVELS[1]).color;
 const lvText = s => (lvMin(s) === lvMax(s)) ? LEVELS[lvMax(s)].short : `${LEVELS[lvMin(s)].short}–${LEVELS[lvMax(s)].short}`;
+/* สัดส่วนภาษา ป.1 (% ของเวลาเรียน) — จาก wiki/comparisons/language-mix.md ผ่าน frontmatter
+   ค่า = ตัวเลขเดี่ยว หรือ [ต่ำ,สูง] (ช่วง) · lang_basis: official โรงประกาศ / counted นับจากตารางคาบ / estimate ประมาณ */
+const langNum = v => Array.isArray(v) ? (v[0] + v[1]) / 2 : (typeof v === "number" ? v : null);
+const langPct = v => Array.isArray(v) ? `${v[0]}–${v[1]}%` : (typeof v === "number" ? `${v}%` : null);
+const LANG_BASIS = { official: "✅ โรงประกาศ", counted: "🧮 นับจากตารางคาบ", estimate: "~ ประมาณ" };
+const langBasisTag = s => LANG_BASIS[s.lang_basis] || "";
+const langMix = s => (s.lang_thai != null || s.lang_eng != null || s.lang_zh != null)
+  ? `🇹🇭 ${langPct(s.lang_thai) || "?"} · 🇬🇧 ${langPct(s.lang_eng) || "?"}` + (s.lang_zh != null ? ` · 🇨🇳 ${langPct(s.lang_zh)}` : "")
+  : null;
 const foodText = f => f === "yes" ? "✅ รวมอาหาร" : f === "no" ? "❌ ไม่รวม" : "❓ ไม่ชัด/ไม่พบ";
 /* แผนที่: ระยะ = เส้นทางขับรถจาก OSRM เทียบกับ "จุดตั้งต้นปัจจุบัน" (state.origin — ย้ายได้บนแผนที่)
    liveRoutes[slug] = {km, min, coords?} จากจุดตั้งต้นนั้น · pending = กำลังคำนวณ · ไม่มี = fallback ระยะตรง (*) */
@@ -1056,7 +1065,11 @@ function renderCompare() {
       : []),
     ["โปรแกรม ป.1", s => esc((s.programs || []).join(" · "))],
     ["ระดับอังกฤษ", s => `<span class="chip lv" style="background:${lvColor(s)}">${lvText(s)}</span> <span class="footnote">${(LEVELS[lvMax(s)] || {}).desc}</span>`],
-    ["ภาษาจีน", s => ZH[s.chinese]],
+    ["สัดส่วนภาษา ป.1", s => { const m = langMix(s); return m
+      ? `<b>${m}</b> <span class="footnote">${langBasisTag(s)}${s.lang_note ? " — " + esc(s.lang_note) : ""}</span>`
+      : `<span class="footnote">ไม่เปิดเผย — ต้องถามโรง (ดูหน้าเอกสาร "สัดส่วนภาษา")</span>`; }],
+    ["ภาษาจีน", s => { const p = langPct(s.lang_zh); return p != null
+      ? `<b>${p}</b>${s.chinese === "intensive" ? " (ตรีภาษา)" : ""}` : ZH[s.chinese]; }],
     ["ค่าเล่าเรียน/ปี", s => `<b class="num ${costOf(s) === minCost ? "best" : ""}">${s.cost != null ? fmtBaht(s.cost) : costRangeText(s) || "ไม่เปิดเผย"}</b><span class="sub">${esc(s.cost != null ? s.cost_ref : (s.cost_programs || []).length ? costProgramText(s) + " — " + s.cost_ref : s.cost_ref)}</span>`],
     ["ปีแรกประมาณ", s => s.first_year_est ? fmtBaht(s.first_year_est) : `<span class="footnote">${esc(s.first_year_note)}</span>`],
     ["รวมอาหาร?", s => foodText(s.includes_food)],
@@ -1080,21 +1093,34 @@ const lin = (lo, hi, v) => Math.max(1, Math.min(5, 5 - (v - lo) * 4 / (hi - lo))
 const infoScore = s => (costOf(s) != null ? 2 : 0) + (hasInfo(s.class_size) ? 1.5 : 0) + (hasInfo(s.school_hours) ? 1.5 : 0);
 const costYear = s => (String(s.cost_ref || "").match(/ป\.?\s?\d{3,4}|26-27|25[0-9]{2}/) || [""])[0];
 
-/* 6 แกนของเรดาร์ — คะแนนทั้งหมด normalize จากข้อมูลจริงใน wiki ไม่ใช่การตัดสินคุณภาพ
-   (น้ำหนักแต่ละแกนเป็นของผู้ปกครอง — ยังไม่ได้กำหนดใน criteria.md) */
+/* 7 แกนของเรดาร์ — คะแนนทั้งหมด normalize จากข้อมูลจริงใน wiki ไม่ใช่การตัดสินคุณภาพ
+   (น้ำหนักแต่ละแกนเป็นของผู้ปกครอง — ยังไม่ได้กำหนดใน criteria.md)
+   3 แกนภาษาใช้ % ของเวลาเรียนจริงจาก wiki/comparisons/language-mix.md เมื่อมีข้อมูล
+   โรงที่ไม่เปิดเผย % จะ fallback เป็นระดับ L1–L5 (อังกฤษ) หรือ ไม่มี/วิชาภาษา/เข้มข้น (จีน) */
+const pctScore = (v, full) => v == null ? null : Math.max(1, Math.min(5, 1 + 4 * v / full)); // v% → 1–5
 const AXES = [
   { icon: "🗣️", label: "อังกฤษเข้ม",
-    desc: "ระดับโปรแกรมสูงสุดที่ ป.1 ใหม่เข้าได้ — L1 สามัญ → L5 นานาชาติ (คะแนน = ระดับนั้นตรงๆ)",
-    score: s => lvMax(s) || 1,
-    raw: s => `${(LEVELS[lvMax(s)] || {}).short || "?"} (L${lvMax(s) || "?"})` },
+    desc: "% ของเวลาเรียนที่สอนเป็นอังกฤษ (หน้า wiki สัดส่วนภาษา) — 5% = 1 · 95% = 5 · โรงที่ไม่เปิดเผย % ใช้ระดับโปรแกรม L1 สามัญ → L5 นานาชาติ แทน",
+    score: s => { const v = langNum(s.lang_eng); return v != null ? pctScore(v, 95) : (lvMax(s) || 1); },
+    raw: s => { const p = langPct(s.lang_eng); return p != null
+      ? `<b>${p}</b> <span class="sub">${langBasisTag(s)}</span>`
+      : `${(LEVELS[lvMax(s)] || {}).short || "?"} (L${lvMax(s) || "?"}) <span class="sub">% ไม่เปิดเผย</span>`; } },
+  { icon: "🇹🇭", label: "ภาษาไทย",
+    desc: "% ของเวลาเรียนที่สอนเป็นไทย — 5% = 1 · 95% = 5 · เป็นสัดส่วนเวลา ไม่ใช่คุณภาพการสอน (น้ำหนักของแกนนี้เป็นของผู้ปกครอง) · โรงที่ไม่เปิดเผย = ไม่มีข้อมูล (?)",
+    score: s => pctScore(langNum(s.lang_thai), 95),
+    raw: s => { const p = langPct(s.lang_thai); return p != null
+      ? `<b>${p}</b> <span class="sub">${langBasisTag(s)}</span>` : '<span class="miss">ไม่มีข้อมูล</span>'; } },
   { icon: "🏠", label: SHARE ? "ใกล้จุดตั้งต้น" : "ใกล้บ้าน",
     desc: `ระยะตรงจาก${distWord}` + (SHARE ? " (อนุบาลบ้านสนุกคิด)" : "") + " — ≤3 กม. = 5 · ≥9 กม. = 1 (ระยะตรง ไม่ใช่ระยะขับจริง)",
     score: s => lin(3, 9, s.distance_km),
     raw: s => `${s.distance_km} กม.` },
   { icon: "🇨🇳", label: "ภาษาจีน",
-    desc: "ไม่มีจีน = 1 · มีจีนในบางหลักสูตร = 3 · เข้มข้น/ตรีภาษา = 5",
-    score: s => ({ intensive: 5, some: 3, none: 1 })[s.chinese] ?? null,
-    raw: s => ZH[s.chinese] },
+    desc: "% ของเวลาเรียนที่สอนเป็นจีน — 24% (ตรีภาษาเต็ม) = 5 · 7% = 2 · ไม่มีจีน = 1 · โรงที่รู้แค่ว่ามีจีนเป็นวิชาภาษา (~1 คาบ) = 3",
+    score: s => { const v = langNum(s.lang_zh); if (v != null) return pctScore(v, 24);
+      return ({ intensive: 5, some: 3, none: 1 })[s.chinese] ?? null; },
+    raw: s => { const p = langPct(s.lang_zh); if (p != null)
+        return `<b>${p}</b> <span class="sub">${langBasisTag(s)}</span>${s.chinese === "intensive" ? " ตรีภาษา" : ""}`;
+      return ZH[s.chinese] + (s.chinese === "some" ? " (วิชาภาษา)" : ""); } },
   { icon: "💸", label: "ค่าใช้จ่าย",
     desc: "ค่าเล่าเรียน/ปี โรงเรียนหลายโปรแกรมใช้ราคาต่ำสุด — ≤฿60K = 5 · ≥฿350K = 1 · ⚠️ ปีอ้างอิงต่างกัน (2567–2570) ดูปีในตาราง",
     score: s => costOf(s) == null ? null : lin(60000, 350000, costOf(s)),
@@ -1150,16 +1176,22 @@ function radarSvg(schools, size, opt = {}) {
 /* จุดเด่น/จุดสังเกตอัตโนมัติ — กติกาเดียวกันทุกโรง อ่านจากข้อมูลจริงเท่านั้น */
 function schoolCallouts(s) {
   const hi = [], note = [];
-  const eng = lvMax(s);
-  if (eng >= 4) hi.push(`อังกฤษเข้ม L${eng} (${LEVELS[eng].short})`);
+  const eng = lvMax(s), ep = langNum(s.lang_eng), tp = langNum(s.lang_thai), zp = langNum(s.lang_zh);
+  if (ep != null && ep >= 60) hi.push(`อังกฤษ ${langPct(s.lang_eng)} ของเวลาเรียน`);
+  else if (ep != null && ep <= 20) note.push(`อังกฤษน้อย ${langPct(s.lang_eng)} — ไทยเป็นหลัก`);
+  else if (eng >= 4) hi.push(`อังกฤษเข้ม L${eng} (${LEVELS[eng].short})`);
   else if (eng === 1) note.push("อังกฤษน้อย — ไทยล้วน (L1)");
+  if (tp != null && tp >= 70) hi.push(`ไทยเป็นหลัก ${langPct(s.lang_thai)}`);
+  else if (tp != null && tp <= 15) note.push(`ไทยแค่ ${langPct(s.lang_thai)} — เกือบทั้งวันเป็นอังกฤษ`);
   if (s.distance_km <= 4) hi.push(`ใกล้${distWord} ${s.distance_km} กม.`);
   else if (s.distance_km >= 7) note.push(`ไกลจาก${distWord} ${s.distance_km} กม.`);
   const c = costOf(s);
   if (c == null) note.push("ไม่เปิดเผยราคา");
   else if (c <= 60000) hi.push(`ค่าใช้จ่าย ~${fmtK(c)}/ปี`);
   else if (c >= 300000) note.push(`ราคาสูง ${fmtK(c)}/ปี`);
-  if (s.chinese === "intensive") hi.push("จีนเข้มข้น (ตรีภาษา)");
+  if (zp != null && zp >= 20) hi.push(`จีน ${langPct(s.lang_zh)} ของเวลาเรียน (ตรีภาษา)`);
+  else if (zp != null && zp > 0) hi.push(`มีจีนในตาราง ${langPct(s.lang_zh)} (~2 คาบ)`);
+  else if (s.chinese === "intensive") hi.push("จีนเข้มข้น (ตรีภาษา)");
   if (s.secondary) hi.push(s.secondary_to ? "เรียนต่อถึง " + s.secondary_to : "มีมัธยมต่อ");
   else note.push("จบที่ ป.6 ต้องหาโรงเรียนต่อ ม.1");
   const t = infoScore(s);
@@ -1202,7 +1234,7 @@ function renderRadar() {
       const on = idx >= 0;
       return `<button class="radar-pick-row ${on ? "sel" : ""} ${!on && full ? "full" : ""}" data-radar="${s.slug}" ${!on && full ? 'title="เต็ม 4 โปรแกรมแล้ว — ลบออกหนึ่งก่อน"' : ""}>
         <span class="rp-box" style="${on ? `background:${RC[idx % RC.length]};border-color:${RC[idx % RC.length]}` : ""}">${on ? idx + 1 : ""}</span>
-        <span class="rp-txt"><span class="rp-name">${s.short}</span><span class="rp-sub">${s.distance_km} กม. · ${s.cost != null ? fmtK(s.cost) : costRangeText(s) || "ราคา?"} · ${lvText(s)}</span></span>
+        <span class="rp-txt"><span class="rp-name">${s.short}</span><span class="rp-sub">${s.distance_km} กม. · ${s.cost != null ? fmtK(s.cost) : costRangeText(s) || "ราคา?"} · ${lvText(s)}${langPct(s.lang_eng) ? ` · อังกฤษ ${langPct(s.lang_eng)}` : ""}</span></span>
       </button>`;
     }).join("") + `</div>`;
   $("#radar-clear").onclick = () => {
@@ -1226,7 +1258,7 @@ function renderRadar() {
           ${note.length ? `<div class="rc-row note">${note.map(t => `<span>⚠️ ${esc(t)}</span>`).join("")}</div>` : ""}
         </div>`;
       }).join("") : "") +
-    `<details class="radar-rubric" open><summary>เกณฑ์ให้คะแนนทั้ง 6 แกน (normalize จากข้อมูล wiki)</summary>
+    `<details class="radar-rubric" open><summary>เกณฑ์ให้คะแนนทั้ง ${AXES.length} แกน (normalize จากข้อมูล wiki)</summary>
       <ul>${AXES.map(ax => `<li><b>${ax.icon} ${ax.label}</b> — ${ax.desc}</li>`).join("")}</ul>
       <p class="footnote">คะแนนเป็นการวาดรูปทรงข้อมูล ไม่ใช่คะแนนรวมหรือการตัดสินโรงเรียน · น้ำหนักความสำคัญแต่ละแกนเป็นของผู้ปกครอง (ยังไม่ได้กำหนดใน criteria.md)</p>
     </details>`;
@@ -1464,6 +1496,8 @@ function openDetail(slug) {
       : `ไม่เปิดเผย — ${s.cost_ref}`],
     ["ปีแรกประมาณ", s.first_year_est ? fmtBaht(s.first_year_est) : (s.first_year_note || "—")],
     ["ระดับอังกฤษ", `${lvText(s)} (L${lvMin(s) || "?"}–L${lvMax(s) || "?"})`],
+    ...(langMix(s) ? [["สัดส่วนภาษา ป.1", `${langMix(s)} — ${langBasisTag(s)} · ${s.lang_note}`]]
+                   : [["สัดส่วนภาษา ป.1", "ไม่เปิดเผย — ต้องถามโรง"]]),
     ["ภาษาที่ 3", s.third_language],
     ["ขนาดห้อง", s.class_size || "ไม่พบ"],
     ["เวลาเรียน", s.school_hours || "ไม่พบ"],
