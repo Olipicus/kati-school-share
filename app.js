@@ -1258,7 +1258,7 @@ function renderRadar() {
           ${note.length ? `<div class="rc-row note">${note.map(t => `<span>⚠️ ${esc(t)}</span>`).join("")}</div>` : ""}
         </div>`;
       }).join("") : "") +
-    `<details class="radar-rubric" open><summary>เกณฑ์ให้คะแนนทั้ง ${AXES.length} แกน (normalize จากข้อมูล wiki)</summary>
+    `<details class="radar-rubric" open><summary>เกณฑ์ให้คะแนนทั้ง ${AXES.length} แกน (ปรับจากข้อมูลจริงใน wiki)</summary>
       <ul>${AXES.map(ax => `<li><b>${ax.icon} ${ax.label}</b> — ${ax.desc}</li>`).join("")}</ul>
       <p class="footnote">คะแนนเป็นการวาดรูปทรงข้อมูล ไม่ใช่คะแนนรวมหรือการตัดสินโรงเรียน · น้ำหนักความสำคัญแต่ละแกนเป็นของผู้ปกครอง (ยังไม่ได้กำหนดใน criteria.md)</p>
     </details>`;
