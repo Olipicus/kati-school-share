@@ -1012,7 +1012,7 @@ function renderCalChart() {
      </div>`;
   $("#cal-legend").innerHTML = [
     `<span class="lg"><i class="sw" style="background:#0284d2"></i>แถบสี = กำหนดการจากโรงเรียน</span>`,
-    `<span class="lg"><i class="sw is-expected"></i>ลาย = คาดการณ์ (pattern ปีก่อน)</span>`,
+    `<span class="lg"><i class="sw is-expected"></i>ลาย = คาดการณ์ (รอบปีก่อน)</span>`,
     `<span class="lg"><i class="sw is-uncertain"></i>ขอบประ + (?) = ยังไม่ยืนยัน</span>`,
     `<span class="lg">→ จาง = "เป็นต้นไป" · แถบจางมาก = ผ่านไปแล้ว</span>`,
     `<span class="lg"><i class="cal-vline is-term" style="position:static;height:14px"></i>เส้นประเขียว = เปิดเทอม</span>`,
