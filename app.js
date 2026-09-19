@@ -1127,8 +1127,8 @@ const AXES = [
     raw: s => { const c = costOf(s); return c == null ? '<span class="miss">ไม่เปิดเผย</span>'
       : `${s.cost != null ? fmtBaht(s.cost) : costRangeText(s)} <span class="sub">${costYear(s) || "ไม่ระบุปี"}</span>`; } },
   { icon: "🎓", label: "มัธยมต่อ",
-    desc: "สอนต่อถึง ม.6/G.12 ในระบบเดียวกัน = 5 · ถึงแค่ ม.3 = 3 · จบที่ ป.6 = 1",
-    score: s => !s.secondary ? 1 : (s.secondary_to === "ม.3" ? 3 : 5),
+    desc: "น้ำหนักต่ำตามผู้ปกครอง (19/9/69) — สอนต่อถึง ม.6/G.12 = 3 · ถึงแค่ ม.3 = 2 · จบที่ ป.6 = 1",
+    score: s => !s.secondary ? 1 : (s.secondary_to === "ม.3" ? 2 : 3),
     raw: s => s.secondary ? (s.secondary_to ? "ถึง " + s.secondary_to : "มีต่อ") : "จบ ป.6" },
   { icon: "🔍", label: "ข้อมูลโปร่งใส",
     desc: "เปิดเผยราคา (2) + ขนาดห้อง (1.5) + เวลาเรียน (1.5) — คะแนนต่ำ = ข้อมูลต้องโทรถามโรงเรียนเอง",
