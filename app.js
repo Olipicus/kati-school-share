@@ -54,6 +54,9 @@ const bySlug = slug => D.schools.find(s => s.slug === slug);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const fmtBaht = n => n == null ? "ไม่เปิดเผย" : "฿" + n.toLocaleString("th-TH");
 const fmtK = n => n == null ? "?" : Math.round(n / 1000) + "K";
+/* ค้นหาหลายค่าได้ — คั่นด้วย comma เช่น "สารสาสน์, EP" = เจอโรงที่ตรงค่าใดค่าหนึ่ง (OR) · ช่องว่างรอบคำตัดทิ้ง */
+const qTerms = q => String(q).split(",").map(t => t.trim().toLowerCase()).filter(Boolean);
+const qMatch = (hay, q) => { const low = String(hay).toLowerCase(); return qTerms(q).some(t => low.includes(t)); };
 /* โรงที่ราคาต่างตามโปรแกรม (cost_p1_programs — ไม่แยกหน้า wiki): ใช้ตัวเลขระดับโปรแกรมแทนเมื่อไม่มีราคาหลัก */
 const progCosts = s => (s.cost_programs || []).filter(p => p.cost != null);
 const costOf = s => s.cost != null ? s.cost : (progCosts(s).length ? Math.min(...progCosts(s).map(p => p.cost)) : null);
@@ -484,7 +487,7 @@ function drawRouteLine(s, fly) {
 function applyFilters() {
   const f = state.filters;
   return D.schools.filter(s => {
-    if (f.q && !(s.name + s.short + s.oneliner + (s.programs || []).join(" ")).toLowerCase().includes(f.q.toLowerCase())) return false;
+    if (f.q && !qMatch(s.name + s.short + s.oneliner + (s.programs || []).join(" "), f.q)) return false;
     if (f.dist < 10 && s.distance_km > f.dist) return false;
     if (f.minLevel && lvMax(s) < f.minLevel) return false;
     if (f.chinese !== "all" && s.chinese !== f.chinese) return false;
@@ -531,8 +534,8 @@ function renderFilterBar() {
       <button class="filter-reset" id="f-reset" title="คืนค่าทุกตัวกรองเป็นค่าเริ่มต้น">↺ ล้างตัวกรอง</button>
     </div>
     <div class="frow">
-      <span class="flabel" title="หาจากชื่อโรงเรียน ชื่อย่อ โปรแกรม และคำในคำโปรยของการ์ด">🔍 ค้นหา</span>
-      <div class="fctrl"><input type="text" id="f-q" placeholder="ชื่อโรงเรียน / โปรแกรม…" value="${esc(f.q)}"></div>
+      <span class="flabel" title="หาจากชื่อโรงเรียน ชื่อย่อ โปรแกรม และคำในคำโปรยของการ์ด — ค้นหลายค่าได้ คั่นด้วย comma เช่น สารสาสน์, EP">🔍 ค้นหา</span>
+      <div class="fctrl"><input type="text" id="f-q" placeholder="ชื่อโรงเรียน / โปรแกรม (หลายค่าคั่นด้วย ,)…" value="${esc(f.q)}"></div>
     </div>
     <div class="frow">
       <span class="flabel" title="โรงเรียนหลายโปรแกรม (สามัญ/EP/IEP) ใช้ราคาต่ำสุดของโปรแกรม · โรงเรียนที่ไม่เปิดเผยราคาจะถูกหรี่ไว้">💰 งบค่าเล่าเรียน</span>
@@ -677,8 +680,8 @@ function renderCostFilterBar() {
       <button class="filter-reset" id="cf-reset" title="คืนค่าทุกตัวกรองเป็นค่าเริ่มต้น">↺ ล้างตัวกรอง</button>
     </div>
     <div class="frow">
-      <span class="flabel">🔍 ค้นหา</span>
-      <div class="fctrl"><input type="text" id="cf-q" placeholder="ชื่อโรงเรียน / โปรแกรม…" value="${esc(f.q)}"></div>
+      <span class="flabel" title="ค้นหลายค่าได้ คั่นด้วย comma เช่น สารสาสน์, EP">🔍 ค้นหา</span>
+      <div class="fctrl"><input type="text" id="cf-q" placeholder="ชื่อโรงเรียน / โปรแกรม (หลายค่าคั่นด้วย ,)…" value="${esc(f.q)}"></div>
     </div>
     <div class="frow">
       <span class="flabel">💰 ราคาสูงสุด</span>
@@ -692,7 +695,7 @@ function renderCostFilterBar() {
 function renderCostChart() {
   const maxVal = 400000;
   const cf = state.costFilters;
-  const cfHit = (s, extra) => !cf.q || (s.name + s.short + s.oneliner + (s.programs || []).join(" ") + (extra || "")).toLowerCase().includes(cf.q.toLowerCase());
+  const cfHit = (s, extra) => !cf.q || qMatch(s.name + s.short + s.oneliner + (s.programs || []).join(" ") + (extra || ""), cf.q);
   const inRange = c => c != null && c <= cf.max;
   // 1 แถว/1 ราคา: โรงที่มีราคาเดียว = แถวเดียว · โรงที่ราคาต่างตามโปรแกรม (cost_p1_programs) = แยกแถวตามโปรแกรมที่มีตัวเลข
   const rows = [];
